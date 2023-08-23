@@ -52,16 +52,16 @@ function Paybyuser() {
     // const [showModal, setShowModal] = useState(false);
     const [showModaledit, setShowModaledit] = useState(false);
 
-    const urlserver = "http://localhost:4000";
-    // const urlserver = "https://backendrental.onrender.com";
+    //  const urlserver = "http://localhost:4000";
+   const urlserver = "https://backendrental.onrender.com";
 
     useEffect(() => {
-        return () => {
+     //     return () => {
 
             fetchUsers(usersession.user_cus_id);
 
 
-        };
+      //    };
     }, [usersession.user_cus_id, pic_bin]);
     const notify = async (data) => {
 

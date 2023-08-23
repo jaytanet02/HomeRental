@@ -12,16 +12,16 @@ const Maincustomer = () => {
     if (usersession === null || usersession.user_status === "user") {
         setTimeout(() => {
             Swal.fire({
-              icon: 'error',
-              title: 'คุณไม่มีสิทธิ์เข้า',
-              text: 'กรุณาล็อกอินใหม่อีกครั้ง',
+                icon: 'error',
+                title: 'คุณไม่มีสิทธิ์เข้า',
+                text: 'กรุณาล็อกอินใหม่อีกครั้ง',
             });
             navigate('/main_login');
-          }, 1000);
+        }, 1000);
     }
     const currentDate = new Date();
     const formattedDate = currentDate.toISOString().split('T')[0];
-    
+
     const [showModal, setShowModal] = useState(false);
     const [showModaledit, setShowModaledit] = useState(false);
     const [roomTypenames, setRoomTypenames] = useState({});
@@ -44,7 +44,7 @@ const Maincustomer = () => {
     const [cus_room_electricity, set_cus_room_electricity] = useState("");
     const [cus_room_bin_price, set_cus_room_bin_price] = useState("");
     const [cus_room_sum, set_cus_room_sum] = useState("");
-    
+
     const [edit_user_cus_id, set_edit_user_cus_id] = useState("");
     const [edit_cus_id, set_edit_cus_id] = useState();
     const [edit_cus_name, set_edit_cus_name] = useState("");
@@ -64,14 +64,14 @@ const Maincustomer = () => {
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
 
-    const urlserver = "http://localhost:4000";
-   // const urlserver = "https://backendrental.onrender.com";
+    //  const urlserver = "http://localhost:4000";
+    const urlserver = "https://backendrental.onrender.com";
     useEffect(() => {
-      return () => {
-            fetchUsers();
-            fettyperoom();
-           
-     };
+        //  return () => {
+        fetchUsers();
+        fettyperoom();
+
+        //   };
     }, []);
 
     const startIndex = (currentPage - 1) * 10;
@@ -106,7 +106,7 @@ const Maincustomer = () => {
         }
     };
 
- 
+
     // const notify = async (data) => {
     //     try {
     //         const response = await axios.post(urlserver + `/api_customer/notify`, {
@@ -157,7 +157,7 @@ const Maincustomer = () => {
     const fetchedit = async (id) => {
         try {
             const response = await axios.get(urlserver + `/api_customer/edit?cus_id=${id}`);
-      
+
             console.log(response.data);
             set_edit_cus_id(response.data[0].cus_id);
             set_edit_cus_name(response.data[0].cus_name);
@@ -724,7 +724,7 @@ const Maincustomer = () => {
                                 onChange={(e) => set_edit_cus_id(e.target.value)}
                             />
                         </Form.Group>
-                        <Form.Group  hidden>
+                        <Form.Group hidden>
                             <Form.Label>user_cus_id</Form.Label>
                             <Form.Control
                                 type="text"
