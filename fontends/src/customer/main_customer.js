@@ -65,7 +65,7 @@ const Maincustomer = () => {
     const [totalPages, setTotalPages] = useState(1);
 
     //  const urlserver = "http://localhost:4000";
-    const urlserver = "https://backendrental.onrender.com";
+    const urlserver = "https://homerentalbackend.onrender.com";
     useEffect(() => {
         //  return () => {
         fetchUsers();
