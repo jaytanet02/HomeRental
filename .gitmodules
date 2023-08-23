@@ -1,0 +1,3 @@
+[submodule "fontend"]
+	path = fontend
+	url = https://github.com/jaytanet02/fontend.git
