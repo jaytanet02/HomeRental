@@ -367,7 +367,6 @@ router.get('/', async (req, res) => {
 
 
     if (cus_id !== "" && cus_id_nan == false) {
-        console.log(cus_id_nan);
         var data = await client.db('home_rental').collection('payment').aggregate([
             {
                 $match: { pay_cus_id: cus_id } // เลือกเอกสารที่ pay_cus_id เท่ากับ 2

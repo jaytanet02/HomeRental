@@ -25,7 +25,7 @@ router.post('/create', async (req, res) => {
   res.status(200).send({
     "status": "ok",
     "message": "User with ID = " + data.user_id + " is created",
-    "data": data
+    "data": datain
   });
 });
 
