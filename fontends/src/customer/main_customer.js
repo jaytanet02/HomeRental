@@ -73,9 +73,6 @@ const Maincustomer = () => {
     //     };
     // }, []);
 
-
-
-
     const urlserver = "https://homerentalbackend.onrender.com";
     useEffect(() => {
         fetchUsers();

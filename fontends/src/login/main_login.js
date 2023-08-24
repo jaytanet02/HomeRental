@@ -9,7 +9,7 @@ function App() {
     const navigate = useNavigate(); // Initialize useNavigate
 
 
-//    const urlserver = "http://localhost:4000";
+    // const urlserver = "http://localhost:4000";
     const urlserver = "https://homerentalbackend.onrender.com";
     const handleLogin = async (e) => {
         e.preventDefault();
@@ -19,7 +19,7 @@ function App() {
 
             if (response.data.user_status === "admin") {
                 navigate('/main_dashboard');
-            }else if(response.data.user_status === "user"){
+            } else if (response.data.user_status === "user") {
                 navigate('/main_pay_by_user');
             } else {
                 Swal.fire({

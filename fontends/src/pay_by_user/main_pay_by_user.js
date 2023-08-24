@@ -531,14 +531,15 @@ function Paybyuser() {
                             title: "ชำระเงินสำเร็จ",
                             text: "",
                             icon: "success",
+                        }).then((result) => {
+                            if (result.isConfirmed || result.dismiss === Swal.DismissReason.timer) {
+                                notify("ชำระเงินสำเร็จ " + pay_cus_name + " ห้อง " + pay_cus_room_name_full + " จำนวนเงิน "
+                                    + pay_price_total + " บาท ชำระเงินวันที่ " + formatDate("format_date", response.data.pay_date));
+                                setTimeout(() => {
+                                    window.location.reload();
+                                }, 1000);
+                            }
                         });
-
-                        notify("ชำระเงินสำเร็จ " + pay_cus_name + " ห้อง " + pay_cus_room_name_full + " จำนวนเงิน "
-                            + pay_price_total + " บาท ชำระเงินวันที่ " + formatDate("format_date", response.data.pay_date));
-                        setTimeout(() => {
-                            window.location.reload();
-                        }, 2000);
-
                     }
 
                 } else if (result.dismiss === Swal.DismissReason.cancel) {
@@ -981,7 +982,7 @@ function Paybyuser() {
 
 
                                 <div hidden={status_modal_button_bin === "hidden"} ><center>
-                                <img src={pic_bin} width="80%" height="80%" alt="bin" />
+                                    <img src={pic_bin} width="80%" height="80%" alt="bin" />
 
                                 </center>
                                 </div>

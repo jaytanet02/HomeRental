@@ -70,6 +70,7 @@ function Dashboard() {
     useEffect(() => {
         fetchUsers();
     }, []);
+
   const notify = async (data) => {
 
     try {
