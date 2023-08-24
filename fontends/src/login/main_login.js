@@ -17,10 +17,16 @@ function App() {
             const response = await axios.get(urlserver + `/api_user?user_username=${user_username}&user_password=${user_password}`);
             sessionStorage.setItem('user', JSON.stringify(response.data));
 
-            if (response.data.user_status === "admin") {
+            if (response.data.user_status === "admin" && response.data.user_usage === 1) {
                 navigate('/main_dashboard');
-            } else if (response.data.user_status === "user") {
+            } else if (response.data.user_status === "user" && response.data.user_usage === 1) {
                 navigate('/main_pay_by_user');
+            } else if (response.data.user_usage === 2) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'ผู้ใช้งานไม่มีสิทธิ์เข้าระบบ ',
+                    text: 'กรุณาติดต่อเจ้าของห้องพัก',
+                });
             } else {
                 Swal.fire({
                     icon: 'error',

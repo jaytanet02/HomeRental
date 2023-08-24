@@ -234,7 +234,12 @@ router.get('/', async (req, res) => {
   } else if (id !== "" && id_nan !== true) {
     var data = await client.db('home_rental').collection('room').findOne({ room_id: id });
   } else {
-    var data = await client.db('home_rental').collection('room').find().toArray();
+    var data = await client.db('home_rental').collection('room').find({
+      $or: [
+        { room_status: 1 },
+        { room_status: 2 }
+      ]
+    }).toArray();
     data.sort((a, b) => {
       if (parseInt(a.room_typename) !== parseInt(b.room_typename)) {
         return parseInt(a.room_typename) - parseInt(b.room_typename);
@@ -265,23 +270,22 @@ router.delete('/delete', async (req, res) => {
   try {
     await client.connect();
 
-    const db = client.db('home_rental');
-    const collection = db.collection('room');
+    const update_status = {
+      $set: {
+        room_status: 2
+      }
+    };
+    const filter = { room_id: id_room };
+    const database = client.db('home_rental');
+    const collection = database.collection('room');
+    const result = await collection.updateOne(filter, update_status);
+    console.log(`${result.modifiedCount} document updated`);
+    res.status(200).send({
+      "status": "ok",
+      "message": "data with ID = " + id_room + " is updated",
+      "data": result
+    });
 
-    const result = await collection.deleteOne({ room_id: id_room });
-
-    if (result.deletedCount === 1) {
-      res.status(200).send({
-        "status": "ok",
-        "message": `ลบเอกสารที่มี cus_id เท่ากับ ${id} เรียบร้อยแล้ว`,
-        "data": result
-      });
-    } else {
-      res.status(404).send({
-        "status": "not found",
-        "message": `ไม่พบเอกสารที่มี cus_id เท่ากับ ${id}`
-      });
-    }
   } catch (err) {
     console.error('เกิดข้อผิดพลาดในการลบเอกสาร:', err);
     res.status(500).send({

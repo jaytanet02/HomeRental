@@ -62,7 +62,7 @@ function Navbar() {
                 <div className="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
                   <i className="ni ni-single-02 text-dark text-sm opacity-10"></i>
                 </div>
-                <span className="nav-link-text ms-1">เจ้าบ้าน</span>
+                <span className="nav-link-text ms-1">ผู้ใช้งาน</span>
               </Link>
             </li>
 

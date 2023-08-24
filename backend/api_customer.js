@@ -109,19 +109,19 @@ router.post('/create', async (req, res) => {
     }
   };
 
-const checkLastUserId = await client
-  .db('home_rental')
-  .collection('user')
-  .find()
-  .sort({ user_id: -1 })
-  .limit(1)
-  .toArray();
+  const checkLastUserId = await client
+    .db('home_rental')
+    .collection('user')
+    .find()
+    .sort({ user_id: -1 })
+    .limit(1)
+    .toArray();
 
-let runUserId = 1; // ค่าเริ่มต้นหากไม่มี user_id ที่มากที่สุด
+  let runUserId = 1; // ค่าเริ่มต้นหากไม่มี user_id ที่มากที่สุด
 
-if (checkLastUserId.length > 0) {
-  runUserId = checkLastUserId[0].user_id + 1;
-}
+  if (checkLastUserId.length > 0) {
+    runUserId = checkLastUserId[0].user_id + 1;
+  }
   const datauser = await client.db('home_rental').collection('user').insertOne({
     user_id: runUserId,
     user_cus_id: data.cus_id,
@@ -129,6 +129,7 @@ if (checkLastUserId.length > 0) {
     user_username: data.cus_id_card,
     user_password: data.cus_tel,
     user_status: "user",
+    user_usage: 1,
   });
 
   await client.db('home_rental').collection('room').updateOne(filter, update_status_room);
@@ -285,11 +286,11 @@ router.put('/update', async (req, res) => {
   };
 
   await client.db('home_rental').collection('customer').updateOne(filter_cus, updateDocument);
-  
 
 
 
-  const filter_user_cus_id = { user_cus_id: data.edit_user_cus_id };
+
+  const filter_user_cus_id = { user_cus_id: data.edit_cus_id };
   const update_user = {
     $set: {
       user_cus_id: data.edit_cus_id,
@@ -298,8 +299,10 @@ router.put('/update', async (req, res) => {
       user_password: data.edit_cus_tel,
     }
   };
+  console.log(filter_user_cus_id);
+  console.log(update_user);
   await client.db('home_rental').collection('user').updateOne(filter_user_cus_id, update_user);
-  
+
 
 
   res.status(200).send({
@@ -388,14 +391,20 @@ router.delete('/delete', async (req, res) => {
     await client.db('home_rental').collection('room').updateOne(filter, update_status_room);
   }
   try {
+    
+    const filter_cus_id = { cus_id: id_cus };
+    const update_status_customer = {
+      $set: {
+        cus_status: 2,
+      }
+    };
     const db = client.db('home_rental');
     const collection = db.collection('customer');
-    const result = await collection.deleteOne({ cus_id: id_cus });
+    const result = await client.db('home_rental').collection('customer').updateOne(filter_cus_id, update_status_customer);
     await client.close();
 
 
-
-    if (result.deletedCount === 1) {
+    if (result.matchedCount === 1) {
       res.status(200).send({
         "status": "ok",
         "message": `ลบเอกสารที่มี cus_id เท่ากับ ${id} เรียบร้อยแล้ว`,

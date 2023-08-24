@@ -80,8 +80,8 @@ const Maincustomer = () => {
 
     }, []);
 
-    const startIndex = (currentPage - 1) * 10;
-    const endIndex = currentPage * 10;
+    const startIndex = (currentPage - 1) * 5;
+    const endIndex = currentPage * 5;
     const currentUsers = users.slice(startIndex, endIndex);
     const changePage = (page) => {
         setCurrentPage(page);
@@ -105,6 +105,8 @@ const Maincustomer = () => {
             const currentDate = new Date();
             const formattedDate = currentDate.toISOString().split('T')[0];
             setcus_name("");
+            setcus_id_card("");
+            setcus_tel("");
             setcus_status(1);
             setcus_datein(formattedDate);
         } catch (error) {
@@ -243,28 +245,51 @@ const Maincustomer = () => {
         }
     };
 
-
     const deleteRow = async (id) => {
-
-        try {
-            const response = await axios.delete(urlserver + `/api_customer/delete?cus_id=${id}`);
-
-            console.log(response);
-            if (response.data !== "") {
+        Swal.fire({
+          title: "ต้องการลบลูกบ้านใช่หรือไม่?",
+          text: "การดำเนินการนี้จะปรับสถานะลูกบ้านเป็นออก",
+          icon: "warning",
+          showCancelButton: true,
+          confirmButtonText: "ตกลง",
+          cancelButtonText: "ยกเลิก",
+          confirmButtonColor: "#28A745",
+          cancelButtonColor: "#DC3545",
+        }).then(async (result) => {
+          if (result.isConfirmed) {
+            try {
+              const response = await axios.delete(
+                urlserver + `/api_customer/delete?cus_id=${id}`
+              );
+      
+              if (response.data !== "") {
                 Swal.fire({
-                    title: '',
-                    text: 'ลบข้อมูลสำเร็จ',
-                    icon: 'success',
+                  title: "สำเร็จ",
+                  text: "ปรับสถานะลูกบ้านเป็นออก",
+                  icon: "success",
                 });
                 fetchUsers();
                 fettyperoom();
-                // notify("ลบข้อมูลสำเร็จ" + response.data.message);
+              } else {
+                Swal.fire({
+                  title: "ไม่สำเร็จ",
+                  text: "เกิดข้อผิดพลาดในการลบข้อมูล",
+                  icon: "error",
+                });
+              }
+      
+            } catch (error) {
+              console.error(error);
+              Swal.fire({
+                title: "เกิดข้อผิดพลาด",
+                text: "เกิดข้อผิดพลาดในการส่งคำร้องขอลบข้อมูล",
+                icon: "error",
+              });
             }
-
-        } catch (error) {
-            console.error(error);
-        }
-    };
+          }
+        });
+      };
+      
     const ob_status = {
         1: 'พักอาศัย',
         2: 'ออก',

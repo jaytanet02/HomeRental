@@ -51,7 +51,7 @@ const Customers = () => {
 
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
-    
+
     // const urlserver = "http://localhost:4000";
     // useEffect(() => {
     //     return () => {
@@ -65,8 +65,8 @@ const Customers = () => {
                 fetchUsers();
         }, []);
 
-    const startIndex = (currentPage - 1) * 10;
-    const endIndex = currentPage * 10;
+    const startIndex = (currentPage - 1) * 5;
+    const endIndex = currentPage * 5;
     const currentUsers = users.slice(startIndex, endIndex);
     const changePage = (page) => {
         setCurrentPage(page);
@@ -83,7 +83,7 @@ const Customers = () => {
             } else {
                 setroom_id(1);
             }
-            setTotalPages(Math.ceil(response.data.length / 10));
+            setTotalPages(Math.ceil(response.data.length / 5));
             // const currentDate = new Date();
             // const formattedDate = currentDate.toISOString().split('T')[0];
             setroom_typename("");
@@ -120,24 +120,41 @@ const Customers = () => {
         }
     };
     const deleterow = async (id) => {
-
-        try {
-            const response = await axios.delete(urlserver + `/api_room/delete?room_id=${id}`);
-            console.log(response.data); // ตัวอย่างการใช้งาน response ที่ได้จาก server
-
-            if (response.data !== "") {
+        Swal.fire({
+          title: "ต้องการลบห้องเช่าใช่หรือไม่?",
+          text: "การดำเนินการนี้จะปรับสถานะห้องเช่าเป็นไม่ว่าง",
+          icon: "warning",
+          showCancelButton: true,
+          confirmButtonText: "ตกลง",
+          cancelButtonText: "ยกเลิก",
+          confirmButtonColor: "#28A745",
+          cancelButtonColor: "#DC3545",
+        }).then(async (result) => {
+          if (result.isConfirmed) {
+            try {
+              const response = await axios.delete(
+                urlserver + `/api_room/delete?room_id=${id}`
+              );
+              console.log(response.data); // ตัวอย่างการใช้งาน response ที่ได้จาก server
+      
+              if (response.data !== "") {
                 Swal.fire({
-                    title: '',
-                    text: 'ลบข้อมูลสำเร็จ',
-                    icon: 'success',
+                  title: "สำเร็จ",
+                  text: "ปรับสถานะห้องเช่าเป็นไม่ว่าง",
+                  icon: "success",
                 });
                 fetchUsers();
+              }
+            } catch (error) {
+              console.error(error);
             }
+          }
+        });
+      };
+      
 
-        } catch (error) {
-            console.error(error);
-        }
-    };
+
+
     const ob_status = {
         1: 'ว่าง',
         2: 'ไม่ว่าง',
@@ -381,33 +398,35 @@ const Customers = () => {
                                                 </thead>
                                                 <tbody>
                                                     {currentUsers.map((file, index) => (
-                                                        <tr key={index}>
-                                                            <td className="text-center  text-sm font-weight-bolder opacity-8">
-                                                                {file.room_typename}
-                                                            </td>
-                                                            <td className="text-center text-sm font-weight-bolder opacity-8">
-                                                                {file.room_name}
-                                                            </td>
+                                                        file.room_status !== 3 ? (
+                                                            <tr key={index}>
+                                                                <td className="text-center  text-sm font-weight-bolder opacity-8">
+                                                                    {file.room_typename}
+                                                                </td>
+                                                                <td className="text-center text-sm font-weight-bolder opacity-8">
+                                                                    {file.room_name}
+                                                                </td>
 
-                                                            {file.room_status === 1 ? (
+                                                                {file.room_status === 1 ? (
+                                                                    <td className="text-center ">
+                                                                        <span style={{ width: '70px' }} className="badge badge-sm bg-gradient-success">{ob_status[file.room_status]}</span>
+                                                                    </td>
+                                                                ) : (
+                                                                    <td className="text-center ">
+                                                                        <span style={{ width: '70px' }} className="badge badge-sm bg-gradient-danger">{ob_status[file.room_status]}</span>
+                                                                    </td>
+                                                                )}
                                                                 <td className="text-center ">
-                                                                    <span style={{ width: '70px' }} className="badge badge-sm bg-gradient-success">{ob_status[file.room_status]}</span>
+                                                                    <button className="btn btn-primary" type='button' onClick={() => openModaledit(file.room_id)}>
+                                                                        <i className="fa-regular fa-pen-to-square"></i>
+                                                                    </button>
+                                                                    &nbsp;
+                                                                    <button className="btn btn-danger" type='button' onClick={() => deleterow(file.room_id)}>
+                                                                        <i className="fa-solid fa-trash-can"></i>
+                                                                    </button>
                                                                 </td>
-                                                            ) : (
-                                                                <td className="text-center ">
-                                                                    <span style={{ width: '70px' }} className="badge badge-sm bg-gradient-danger">{ob_status[file.room_status]}</span>
-                                                                </td>
-                                                            )}
-                                                            <td className="text-center ">
-                                                                <button className="btn btn-primary" type='button' onClick={() => openModaledit(file.room_id)}>
-                                                                    <i className="fa-regular fa-pen-to-square"></i>
-                                                                </button>
-                                                                &nbsp;
-                                                                <button className="btn btn-danger" type='button' onClick={() => deleterow(file.room_id)}>
-                                                                    <i className="fa-solid fa-trash-can"></i>
-                                                                </button>
-                                                            </td>
-                                                        </tr>
+                                                            </tr>
+                                                        ) : (null)
                                                     ))}
                                                 </tbody>
                                             </table>
