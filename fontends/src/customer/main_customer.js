@@ -64,14 +64,23 @@ const Maincustomer = () => {
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
 
-    //  const urlserver = "http://localhost:4000";
+    // const urlserver = "http://localhost:4000";
+    // useEffect(() => {
+    //     return () => {
+    //         fetchUsers();
+    //         fettyperoom();
+
+    //     };
+    // }, []);
+
+
+
+
     const urlserver = "https://homerentalbackend.onrender.com";
     useEffect(() => {
-        //  return () => {
         fetchUsers();
         fettyperoom();
 
-        //   };
     }, []);
 
     const startIndex = (currentPage - 1) * 10;

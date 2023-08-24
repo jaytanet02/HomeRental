@@ -57,16 +57,19 @@ function Dashboard() {
   // const [showModal, setShowModal] = useState(false);
   const [showModaledit, setShowModaledit] = useState(false);
   const [showqr, setShowshowqr] = useState(false);
-   // const urlserver = "http://localhost:4000";
- const urlserver = "https://homerentalbackend.onrender.com";
 
-  useEffect(() => {
-    //  return () => {
-      fetchUsers();
+  // const urlserver = "http://localhost:4000";
+  // useEffect(() => {
+  //   return () => {
+  //     fetchUsers();
+  //   };
+  // }, []);
 
 
-   //   };
-  }, []);
+   const urlserver = "https://homerentalbackend.onrender.com";
+    useEffect(() => {
+        fetchUsers();
+    }, []);
   const notify = async (data) => {
 
     try {

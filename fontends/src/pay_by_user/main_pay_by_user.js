@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from 'react'
-import Navbar from "../Navbar";
-import Indexmain from '../indexmain';
+
 import axios from 'axios';
 import Swal from 'sweetalert2';
 import { Button, Modal, Form } from 'react-bootstrap';
-
+import { useNavigate } from 'react-router-dom'; // Import useNavigate
 
 function Paybyuser() {
 
@@ -49,20 +48,37 @@ function Paybyuser() {
 
 
     const [data, setData] = useState([]);
-    // const [showModal, setShowModal] = useState(false);
     const [showModaledit, setShowModaledit] = useState(false);
+    const [fullname, setFullname] = useState("");
+    const [status, setstatus] = useState("");
+    const [showModal, setShowModal] = useState(false);
+    const navigate = useNavigate(); // Initialize useNavigate
 
-    //  const urlserver = "http://localhost:4000";
-   const urlserver = "https://homerentalbackend.onrender.com";
+    // const urlserver = "http://localhost:4000";
+    // useEffect(() => {
 
+    //     return () => {
+    //         fetchUsers(usersession.user_cus_id);
+    //         setFullname(usersession.user_name);
+    //         setstatus(usersession.user_status);
+
+    //     };
+    // }, [usersession.user_cus_id, usersession.user_name, usersession.user_status, pic_bin]);
+
+
+    const urlserver = "https://homerentalbackend.onrender.com";
     useEffect(() => {
-     //     return () => {
 
             fetchUsers(usersession.user_cus_id);
+            setFullname(usersession.user_name);
+            setstatus(usersession.user_status);
+
+    }, [usersession.user_cus_id, usersession.user_name, usersession.user_status, pic_bin]);
 
 
-      //    };
-    }, [usersession.user_cus_id, pic_bin]);
+
+
+
     const notify = async (data) => {
 
         try {
@@ -534,15 +550,96 @@ function Paybyuser() {
             console.error(error);
         }
     };
+    const openModal = () => {
+        setShowModal(true);
+    };
+    const closeModals = () => {
+        setShowModal(false);
+    };
+    const checkout = () => {
+        sessionStorage.clear();
+        Swal.fire({
+            icon: 'warning',
+            title: 'คุณต้องการออกจากระบบ ใช่หรือไหม ?',
+            text: '',
+            showCancelButton: true,
+            showCloseButton: true,  // เพิ่มปุ่มปิด (X) ด้านขวาบน
+            confirmButtonText: "ตกลง",
+            cancelButtonText: "ยกเลิก",
+            confirmButtonColor: "#28A745",
+            cancelButtonColor: "#DC3545",
+        }).then(async (result) => {
+            if (result.isConfirmed) {
+                navigate('/main_login');
+            } else if (result.dismiss === Swal.DismissReason.cancel) {
 
-
+            }
+        });
+    };
     return (
         <>
 
-            <Indexmain />
+            <Modal show={showModal} onHide={closeModal}>
+                <Modal.Header closeButton>
+                    <Modal.Title>ข้อมูลส่วนตัว</Modal.Title>
+                </Modal.Header>
+                <Modal.Body >
+                    <Form >
+                        <Form.Group>
+                            <Form.Label> ชื่อ-นามสกุล</Form.Label>
+                            <Form.Control
+                                type="text"
+                                value={fullname}
+                                onChange={(e) => setFullname(e.target.value)}
+                                readOnly
+                            />
+                        </Form.Group>
+                        <Form.Group>
+                            <Form.Label>สถานะ</Form.Label>
+                            <Form.Control
+                                type="text"
+                                value={status}
+                                onChange={(e) => setstatus(e.target.value)}
+                                readOnly
+                            />
+                        </Form.Group>
+                        <Modal.Footer>
+                            <Button variant="success" onClick={checkout}>
+                                ออกจากระบบ
+                            </Button>
+                            <Button variant="danger" onClick={closeModals}>
+                                ปิด
+                            </Button>
+                        </Modal.Footer>
+                    </Form>
+                </Modal.Body>
+            </Modal>
             <body className="g-sidenav-show   bg-gray-100">
-                <Navbar />
+
                 <main className="main-content position-relative border-radius-lg ">
+
+                    <nav className="navbar navbar-main navbar-expand-lg px-0 mx-4 shadow-none border-radius-xl " id="navbarBlur" data-scroll="false">
+                        <div className="container-fluid py-1 px-3">
+
+
+
+                            <div className="collapse navbar-collapse mt-sm-0 mt-2 me-md-0 me-sm-4" id="navbar">
+                                <div className="ms-md-auto pe-md-3 d-flex align-items-center">
+
+                                </div>
+
+                                <ul className="navbar-nav  justify-content-end">
+                                    <li className="nav-item d-flex align-items-center">
+                                        <Button className="btn btn-warning" onClick={openModal}>
+                                            <i className="fa fa-user me-sm-1"></i>
+                                            {"  " + fullname}
+                                        </Button>
+                                    </li>
+
+                                </ul>
+                            </div>
+                        </div>
+                    </nav>
 
                     <div className="container-fluid py-4 ">
                         <div className="row">
@@ -884,7 +981,8 @@ function Paybyuser() {
 
 
                                 <div hidden={status_modal_button_bin === "hidden"} ><center>
-                                    <img src={pic_bin} width={300} height={450} alt="bin" />
+                                <img src={pic_bin} width="80%" height="80%" alt="bin" />
+
                                 </center>
                                 </div>
 
@@ -934,7 +1032,7 @@ function Paybyuser() {
                                                 <tbody>
 
                                                     {data.map((value, index) => (
-                                                        value.pay_status !== -1  ? (
+                                                        value.pay_status !== -1 ? (
                                                             <tr key={index}>
                                                                 <td className="text-center  text-sm font-weight-bolder opacity-8">
                                                                     {value.pay_cus_name}<br />
