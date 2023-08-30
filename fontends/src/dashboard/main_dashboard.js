@@ -21,6 +21,7 @@ function Dashboard() {
       navigate('/main_login');
     }, 1000);
   }
+  // const [searchTerm, setSearchTerm] = useState("");
   const [session_name, set_session_name] = useState("");
   const [showSaveButton, setShowSaveButton] = useState(false);
   const [not_received_amount, setnot_received_amount] = useState("");
@@ -64,14 +65,12 @@ function Dashboard() {
   //     fetchUsers();
   //   };
   // }, []);
+  // const urlserver = "https://homerentalbackend.onrender.com";
 
-
-   // const urlserver = "https://homerentalbackend.onrender.com";
-
-   const urlserver = "https://lazy-ruby-rooster-gown.cyclic.app";
-    useEffect(() => {
-        fetchUsers();
-    }, []);
+  const urlserver = "https://lazy-ruby-rooster-gown.cyclic.app";
+  useEffect(() => {
+    fetchUsers();
+  }, []);
 
   const notify = async (data) => {
 
@@ -107,35 +106,23 @@ function Dashboard() {
   }
 
   function textstatus(type, text) {
-
     if (type === "text" && text === -1) {
       return `รอคิดค่าเช่าบ้าน`;
-
     } else if (type === "text" && text === 0) {
       return `รอชำระเงิน`;
-
     } else if (type === "text" && text === 1) {
       return `รอการตรวจสอบ`;
-
     } else if (type === "text" && text === 2) {
       return `ชำระเงินเรียบร้อย`;
-
-    }
-
-    if (type === "color" && text === -1) {
+    } if (type === "color" && text === -1) {
       return `badge badge-sm bg-gradient-danger`;
-
     } else if (type === "color" && text === 0) {
       return `badge badge-sm bg-gradient-info`;
-
     } else if (type === "color" && text === 1) {
       return `badge badge-sm bg-gradient-warning`;
-
     } else if (type === "color" && text === 2) {
       return `badge badge-sm bg-gradient-success`;
-
     }
-
   }
 
 
@@ -185,7 +172,6 @@ function Dashboard() {
   };
 
   const fetchedit = async (id) => {
-
     try {
       const response = await axios.get(urlserver + `/api_payment/edit?pay_id=${id}`);
       set_pay_id(response.data[0].pay_id);
@@ -193,7 +179,6 @@ function Dashboard() {
       set_pay_cus_room_name_full(response.data[0].pay_cus_room_name_full);
       set_pay_cus_room_price(response.data[0].pay_cus_room_price.toLocaleString());
       set_pay_price_fine(response.data[0].pay_price_fine.toLocaleString());
-
       set_pay_room_meter_water_before(response.data[0].pay_room_meter_water_before.toLocaleString());
       set_pay_price_water(response.data[0].pay_price_water.toLocaleString());
       if (response.data[0].pay_meter_water_after === 0) {
@@ -202,13 +187,11 @@ function Dashboard() {
         set_pay_meter_water_after(response.data[0].pay_meter_water_after.toLocaleString());
       }
       set_pay_room_meter_electricity_before(response.data[0].pay_room_meter_electricity_before.toLocaleString());
-
       if (response.data[0].pay_meter_electricity_after === 0) {
         set_pay_meter_electricity_after(response.data[0].pay_room_meter_electricity_before.toLocaleString());
       } else {
         set_pay_meter_electricity_after(response.data[0].pay_meter_electricity_after.toLocaleString());
       }
-
       set_pay_price_electricity(response.data[0].pay_price_electricity.toLocaleString());
       set_pay_room_bin_price(response.data[0].pay_room_bin_price.toLocaleString());
       set_pay_price_total(response.data[0].pay_price_total.toLocaleString());
@@ -952,6 +935,51 @@ function Dashboard() {
 
           {/* table */}
           <div className="container-fluid py-4">
+            {/* <div className="d-flex justify-content-between align-items-center container-fluid">
+              <div className="input-group" style={{ maxWidth: '200px' }}>
+                <select
+                  className="form-select border-1 small text-right"
+                  aria-label="Select Month"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}>
+                  <option value="0">ทั้งหมด</option>
+                  <option value="01">มกราคม</option>
+                  <option value="02">กุมภาพันธ์</option>
+                  <option value="03">มีนาคม</option>
+                  <option value="04">เมษายน</option>
+                  <option value="05">พฤษภาคม</option>
+                  <option value="06">มิถุนายน</option>
+                  <option value="07">กรกฎาคม</option>
+                  <option value="08">สิงหาคม</option>
+                  <option value="09">กันยายน</option>
+                  <option value="10">ตุลาคม</option>
+                  <option value="11">พฤศจิกายน</option>
+                  <option value="12">ธันวาคม</option>
+                </select>
+              </div>
+              <div className="input-group" style={{ maxWidth: '200px' }}>
+                <select
+                  className="form-select border-1 small text-right"
+                  aria-label="Select Month"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}>
+                  <option value="0">ทั้งหมด</option>
+                  <option value="01">มกราคม</option>
+                  <option value="02">กุมภาพันธ์</option>
+                  <option value="03">มีนาคม</option>
+                  <option value="04">เมษายน</option>
+                  <option value="05">พฤษภาคม</option>
+                  <option value="06">มิถุนายน</option>
+                  <option value="07">กรกฎาคม</option>
+                  <option value="08">สิงหาคม</option>
+                  <option value="09">กันยายน</option>
+                  <option value="10">ตุลาคม</option>
+                  <option value="11">พฤศจิกายน</option>
+                  <option value="12">ธันวาคม</option>
+                </select>
+              </div>
+            </div><br /> */}
+
             <div className="row">
               <div className="col-12">
                 <div className="card mb-4">

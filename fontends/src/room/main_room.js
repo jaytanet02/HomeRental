@@ -18,7 +18,7 @@ const Customers = () => {
             navigate('/main_login');
         }, 1000);
     }
-
+    const [searchTerm, setSearchTerm] = useState("");
     const [showModal, setShowModal] = useState(false);
     const [showModaledit, setShowModaledit] = useState(false);
     const [users, setUsers] = useState([]);
@@ -60,16 +60,16 @@ const Customers = () => {
     // }, []);
 
 
-   // const urlserver = "https://homerentalbackend.onrender.com";
+    // const urlserver = "https://homerentalbackend.onrender.com";
 
-   const urlserver = "https://lazy-ruby-rooster-gown.cyclic.app";
-        useEffect(() => {
-                fetchUsers();
-        }, []);
+    const urlserver = "https://lazy-ruby-rooster-gown.cyclic.app";
+    useEffect(() => {
+        fetchUsers();
+    }, []);
 
-    const startIndex = (currentPage - 1) * 5;
-    const endIndex = currentPage * 5;
-    const currentUsers = users.slice(startIndex, endIndex);
+    // const startIndex = (currentPage - 1) * 5;
+    // const endIndex = currentPage * 5;
+    // const currentUsers = users.slice(startIndex, endIndex);
     const changePage = (page) => {
         setCurrentPage(page);
     };
@@ -123,37 +123,37 @@ const Customers = () => {
     };
     const deleterow = async (id) => {
         Swal.fire({
-          title: "ต้องการลบห้องเช่าใช่หรือไม่?",
-          text: "การดำเนินการนี้จะปรับสถานะห้องเช่าเป็นไม่ว่าง",
-          icon: "warning",
-          showCancelButton: true,
-          confirmButtonText: "ตกลง",
-          cancelButtonText: "ยกเลิก",
-          confirmButtonColor: "#28A745",
-          cancelButtonColor: "#DC3545",
+            title: "ต้องการลบห้องเช่าใช่หรือไม่?",
+            text: "การดำเนินการนี้จะปรับสถานะห้องเช่าเป็นไม่ว่าง",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonText: "ตกลง",
+            cancelButtonText: "ยกเลิก",
+            confirmButtonColor: "#28A745",
+            cancelButtonColor: "#DC3545",
         }).then(async (result) => {
-          if (result.isConfirmed) {
-            try {
-              const response = await axios.delete(
-                urlserver + `/api_room/delete?room_id=${id}`
-              );
-              console.log(response.data); // ตัวอย่างการใช้งาน response ที่ได้จาก server
-      
-              if (response.data !== "") {
-                Swal.fire({
-                  title: "สำเร็จ",
-                  text: "ปรับสถานะห้องเช่าเป็นไม่ว่าง",
-                  icon: "success",
-                });
-                fetchUsers();
-              }
-            } catch (error) {
-              console.error(error);
+            if (result.isConfirmed) {
+                try {
+                    const response = await axios.delete(
+                        urlserver + `/api_room/delete?room_id=${id}`
+                    );
+                    console.log(response.data); // ตัวอย่างการใช้งาน response ที่ได้จาก server
+
+                    if (response.data !== "") {
+                        Swal.fire({
+                            title: "สำเร็จ",
+                            text: "ปรับสถานะห้องเช่าเป็นไม่ว่าง",
+                            icon: "success",
+                        });
+                        fetchUsers();
+                    }
+                } catch (error) {
+                    console.error(error);
+                }
             }
-          }
         });
-      };
-      
+    };
+
 
 
 
@@ -366,6 +366,18 @@ const Customers = () => {
             console.error(error);
         }
     };
+    const filteredUsers = users.filter(user => {
+        const lowercaseSearchTerm = searchTerm.toLowerCase();
+        return (
+            user.room_typename.toLowerCase().includes(lowercaseSearchTerm) ||
+            user.room_name.toLowerCase().includes(lowercaseSearchTerm) ||
+            String(ob_status[user.room_status]).toLowerCase() === lowercaseSearchTerm
+        );
+    });
+    
+    const startIndex = (currentPage - 1) * 5;
+    const endIndex = currentPage * 5;
+    const currentUsers = filteredUsers.slice(startIndex, endIndex);
 
     return (
         <>
@@ -375,11 +387,23 @@ const Customers = () => {
                 <main className="main-content position-relative border-radius-lg ">
                     {/* table */}
                     <br />
-                    <div align="right" className=" container-fluid ">
-                        <button type="button" className="btn btn-success" onClick={openModal} >
+                    <div className="d-flex justify-content-between align-items-center container-fluid">
+                        <button type="button" className="btn btn-success" onClick={openModal}>
                             เพิ่มข้อมูล
                         </button>
+                        <div className="input-group" style={{ maxWidth: '200px' }}>
+                            <input
+                                type="text"
+                                className="form-control border-1 small text-right"
+                                placeholder="ค้นหาข้อมูล"
+                                aria-label="Search"
+                                aria-describedby="basic-addon2"
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                            />
+                        </div>
                     </div>
+                    <br />
                     <div className="container-fluid py2">
                         <div className="row">
                             <div className="col-12">

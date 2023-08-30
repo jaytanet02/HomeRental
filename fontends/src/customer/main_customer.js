@@ -21,7 +21,7 @@ const Maincustomer = () => {
     }
     const currentDate = new Date();
     const formattedDate = currentDate.toISOString().split('T')[0];
-
+    const [searchTerm, setSearchTerm] = useState("");
     const [showModal, setShowModal] = useState(false);
     const [showModaledit, setShowModaledit] = useState(false);
     const [roomTypenames, setRoomTypenames] = useState({});
@@ -75,16 +75,13 @@ const Maincustomer = () => {
 
     // const urlserver = "https://homerentalbackend.onrender.com";
 
-     const urlserver = "https://lazy-ruby-rooster-gown.cyclic.app";
+    const urlserver = "https://lazy-ruby-rooster-gown.cyclic.app";
     useEffect(() => {
         fetchUsers();
         fettyperoom();
 
     }, []);
 
-    const startIndex = (currentPage - 1) * 5;
-    const endIndex = currentPage * 5;
-    const currentUsers = users.slice(startIndex, endIndex);
     const changePage = (page) => {
         setCurrentPage(page);
     };
@@ -249,49 +246,49 @@ const Maincustomer = () => {
 
     const deleteRow = async (id) => {
         Swal.fire({
-          title: "ต้องการลบลูกบ้านใช่หรือไม่?",
-          text: "การดำเนินการนี้จะปรับสถานะลูกบ้านเป็นออก",
-          icon: "warning",
-          showCancelButton: true,
-          confirmButtonText: "ตกลง",
-          cancelButtonText: "ยกเลิก",
-          confirmButtonColor: "#28A745",
-          cancelButtonColor: "#DC3545",
+            title: "ต้องการลบลูกบ้านใช่หรือไม่?",
+            text: "การดำเนินการนี้จะปรับสถานะลูกบ้านเป็นออก",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonText: "ตกลง",
+            cancelButtonText: "ยกเลิก",
+            confirmButtonColor: "#28A745",
+            cancelButtonColor: "#DC3545",
         }).then(async (result) => {
-          if (result.isConfirmed) {
-            try {
-              const response = await axios.delete(
-                urlserver + `/api_customer/delete?cus_id=${id}`
-              );
-      
-              if (response.data !== "") {
-                Swal.fire({
-                  title: "สำเร็จ",
-                  text: "ปรับสถานะลูกบ้านเป็นออก",
-                  icon: "success",
-                });
-                fetchUsers();
-                fettyperoom();
-              } else {
-                Swal.fire({
-                  title: "ไม่สำเร็จ",
-                  text: "เกิดข้อผิดพลาดในการลบข้อมูล",
-                  icon: "error",
-                });
-              }
-      
-            } catch (error) {
-              console.error(error);
-              Swal.fire({
-                title: "เกิดข้อผิดพลาด",
-                text: "เกิดข้อผิดพลาดในการส่งคำร้องขอลบข้อมูล",
-                icon: "error",
-              });
+            if (result.isConfirmed) {
+                try {
+                    const response = await axios.delete(
+                        urlserver + `/api_customer/delete?cus_id=${id}`
+                    );
+
+                    if (response.data !== "") {
+                        Swal.fire({
+                            title: "สำเร็จ",
+                            text: "ปรับสถานะลูกบ้านเป็นออก",
+                            icon: "success",
+                        });
+                        fetchUsers();
+                        fettyperoom();
+                    } else {
+                        Swal.fire({
+                            title: "ไม่สำเร็จ",
+                            text: "เกิดข้อผิดพลาดในการลบข้อมูล",
+                            icon: "error",
+                        });
+                    }
+
+                } catch (error) {
+                    console.error(error);
+                    Swal.fire({
+                        title: "เกิดข้อผิดพลาด",
+                        text: "เกิดข้อผิดพลาดในการส่งคำร้องขอลบข้อมูล",
+                        icon: "error",
+                    });
+                }
             }
-          }
         });
-      };
-      
+    };
+
     const ob_status = {
         1: 'พักอาศัย',
         2: 'ออก',
@@ -434,6 +431,18 @@ const Maincustomer = () => {
             console.error(error);
         }
     };
+    const filteredUsers = users.filter(user => {
+        const lowercaseSearchTerm = searchTerm.toLowerCase();
+        return (
+            user.cus_name.toLowerCase().includes(lowercaseSearchTerm) ||
+            roomTypenames[user.cus_room_id].toLowerCase().includes(lowercaseSearchTerm) ||
+            String(ob_status[user.cus_status]).toLowerCase().includes(lowercaseSearchTerm)
+        );
+    });
+
+    const startIndex = (currentPage - 1) * 5;
+    const endIndex = currentPage * 5;
+    const currentUsers = filteredUsers.slice(startIndex, endIndex);
 
     return (
         <>
@@ -443,11 +452,23 @@ const Maincustomer = () => {
                 <main className="main-content position-relative border-radius-lg ">
                     {/* table */}
                     <br />
-                    <div align="right" className=" container-fluid ">
-                        <button type="button" className="btn btn-success" onClick={openModal} >
+                    <div className="d-flex justify-content-between align-items-center container-fluid">
+                        <button type="button" className="btn btn-success" onClick={openModal}>
                             เพิ่มข้อมูล
                         </button>
+                        <div className="input-group" style={{ maxWidth: '200px' }}>
+                            <input
+                                type="text"
+                                className="form-control border-1 small text-right"
+                                placeholder="ค้นหาข้อมูล"
+                                aria-label="Search"
+                                aria-describedby="basic-addon2"
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                            />
+                        </div>
                     </div>
+                    <br />
                     <div className="container-fluid py2">
                         <div className="row">
                             <div className="col-12">

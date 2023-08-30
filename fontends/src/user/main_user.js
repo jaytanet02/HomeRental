@@ -36,10 +36,9 @@ const Customers = () => {
   const [edit_user_status, set_edit_user_status] = useState();
   const [edit_user_usage, set_edit_user_usage] = useState();
 
-
-
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [searchTerm, setSearchTerm] = useState("");
 
   // const urlserver = "http://localhost:4000";
   // useEffect(() => {
@@ -49,16 +48,14 @@ const Customers = () => {
   // }, []);
 
 
-    // const urlserver = "https://homerentalbackend.onrender.com";
+  // const urlserver = "https://homerentalbackend.onrender.com";
 
-    const urlserver = "https://lazy-ruby-rooster-gown.cyclic.app";
+  const urlserver = "https://lazy-ruby-rooster-gown.cyclic.app";
   useEffect(() => {
     fetchUsers();
   }, []);
 
-  const startIndex = (currentPage - 1) * 5;
-  const endIndex = currentPage * 5;
-  const currentUsers = users.slice(startIndex, endIndex);
+
   const changePage = (page) => {
     setCurrentPage(page);
   };
@@ -89,8 +86,6 @@ const Customers = () => {
   };
 
   const fetchedit = async (id) => {
-
-
     try {
       const response = await axios.get(urlserver + `/api_user/edit?user_id=${id}`);
 
@@ -139,11 +134,16 @@ const Customers = () => {
   };
 
 
-  const ob_status = {
-    1: 'ใช้งาน',
-    2: 'ไม่ใช้งาน',
-  };
 
+
+  function ob_statuss(data) {
+    if (data === 1) {
+      return 'ใช้งาน';
+    } else if (data === 2) {
+      return 'ไม่ใช้งาน';
+    }
+
+  }
 
   const openModal = () => {
     setShowModal(true);
@@ -156,6 +156,7 @@ const Customers = () => {
   const closeModaledit = () => {
     setShowModaledit(false);
   };
+
   const handleSignup = async (e) => {
     e.preventDefault();
     try {
@@ -168,7 +169,7 @@ const Customers = () => {
         user_password,
         user_status
       });
-      // กระบวนการอื่นๆ เมื่อสำเร็จ
+
       console.log(response.data); // ตัวอย่างการใช้งาน response ที่ได้จาก server
       if (response.data !== "") {
         Swal.fire({
@@ -196,7 +197,7 @@ const Customers = () => {
         edit_user_usage,
 
       });
-      // กระบวนการอื่นๆ เมื่อสำเร็จ
+
 
       console.log(response.data); // ตัวอย่างการใช้งาน response ที่ได้จาก server
       if (response.data !== "") {
@@ -213,6 +214,21 @@ const Customers = () => {
     }
   };
 
+
+  const filteredUsers = users.filter(user => {
+    const lowercaseSearchTerm = searchTerm.toLowerCase();
+    return (
+      user.user_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.user_username.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.user_password.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.user_status.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      String(ob_statuss(user.user_usage)).toLowerCase() === lowercaseSearchTerm
+    );
+  });
+  const startIndex = (currentPage - 1) * 5;
+  const endIndex = currentPage * 5;
+  const currentUsers = filteredUsers.slice(startIndex, endIndex); // ใช้ filteredUsers ที่ผ่านการกรองแล้ว
+
   return (
     <>
       <Indexmain />
@@ -221,23 +237,36 @@ const Customers = () => {
         <main className="main-content position-relative border-radius-lg ">
           {/* table */}
           <br />
-          <div align="right" className=" container-fluid ">
-            <button type="button" className="btn btn-success" onClick={openModal} >
+          
+          <div className="d-flex justify-content-between align-items-center container-fluid">
+            <button type="button" className="btn btn-success" onClick={openModal}>
               เพิ่มข้อมูลผู้ใช้
             </button>
+            <div className="input-group" style={{ maxWidth: '200px' }}>
+              <input
+                type="text"
+                className="form-control border-1 small text-right"
+                placeholder="ค้นหาข้อมูล"
+                aria-label="Search"
+                aria-describedby="basic-addon2"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </div>
           </div>
+          <br />
           <div className="container-fluid py2">
             <div className="row">
               <div className="col-12">
                 <div className="card mb-4">
-                  <div className="card-header pb-0">
-                    <h6>ข้อมูลผู้ใช้งาน</h6>
+                  <div className="card-header pb-0 d-flex justify-content-between align-items-center">
+                    <h6 className="mb-0">ข้อมูลผู้ใช้งาน</h6>
                   </div>
                   <div className="card-body px-0 pt-0 pb-2">
                     <div className="table-responsive p-0">
                       <table className="table align-items-center mb-0">
-                        <thead >
-                          <tr >
+                        <thead>
+                          <tr>
                             <th className="text-center  text-secondary text-xs font-weight-bolder opacity-7">ชื่อ-นามสกุล</th>
                             <th className="text-center  text-secondary text-xs font-weight-bolder opacity-7">ผู้ใช้งาน</th>
                             <th className="text-center  text-secondary text-xs font-weight-bolder opacity-7 ps-2">รหัสผ่าน</th>
@@ -269,11 +298,11 @@ const Customers = () => {
                               )}
                               {file.user_usage === 1 ? (
                                 <td className="text-center ">
-                                  <span style={{ width: '70px' }} className="badge badge-sm bg-gradient-success">{ob_status[file.user_usage]}</span>
+                                  <span style={{ width: '70px' }} className="badge badge-sm bg-gradient-success">{ob_statuss(file.user_usage)}</span>
                                 </td>
                               ) : (
                                 <td className="text-center ">
-                                  <span style={{ width: '70px' }} className="badge badge-sm bg-gradient-danger">{ob_status[file.user_usage]}</span>
+                                  <span style={{ width: '70px' }} className="badge badge-sm bg-gradient-danger">{ob_statuss(file.user_usage)}</span>
                                 </td>
                               )}
                               <td className="text-center ">
