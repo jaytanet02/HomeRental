@@ -66,7 +66,9 @@ function Dashboard() {
   // }, []);
 
 
-   const urlserver = "https://homerentalbackend.onrender.com";
+   // const urlserver = "https://homerentalbackend.onrender.com";
+
+   const urlserver = "https://lazy-ruby-rooster-gown.cyclic.app";
     useEffect(() => {
         fetchUsers();
     }, []);
