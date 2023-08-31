@@ -45,13 +45,16 @@ function Paybyuser() {
     const [pay_room_meter_electricity_before, set_pay_room_meter_electricity_before] = useState("");
     const [pay_room_water, set_pay_room_water] = useState("");
     const [pay_room_electricity, set_pay_room_electricity] = useState("");
-
+    const itemsPerPage = 5; // แสดง 1 รายการต่อหน้า
+    const [currentPage, setCurrentPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(1);
 
     const [data, setData] = useState([]);
     const [showModaledit, setShowModaledit] = useState(false);
     const [fullname, setFullname] = useState("");
     const [status, setstatus] = useState("");
     const [showModal, setShowModal] = useState(false);
+    
     const navigate = useNavigate(); // Initialize useNavigate
 
     // const urlserver = "http://localhost:4000";
@@ -64,22 +67,25 @@ function Paybyuser() {
 
     //     };
     // }, [usersession.user_cus_id, usersession.user_name, usersession.user_status, pic_bin]);
-
-
-   // const urlserver = "https://homerentalbackend.onrender.com";
-   const urlserver = "https://lazy-ruby-rooster-gown.cyclic.app";
+    // const urlserver = "https://homerentalbackend.onrender.com";
+    const urlserver = "https://lazy-ruby-rooster-gown.cyclic.app";
     useEffect(() => {
 
-            fetchUsers(usersession.user_cus_id);
-            setFullname(usersession.user_name);
-            setstatus(usersession.user_status);
+        fetchUsers(usersession.user_cus_id);
+        setFullname(usersession.user_name);
+        setstatus(usersession.user_status);
 
     }, [usersession.user_cus_id, usersession.user_name, usersession.user_status, pic_bin]);
 
+    const changePage = (page) => {
+        setCurrentPage(page);
+      };
 
+      const startIndex = (currentPage - 1) * itemsPerPage;
+      const endIndex = startIndex + itemsPerPage;
+      const currentUsers = data.slice(startIndex, endIndex);
 
-
-
+ 
     const notify = async (data) => {
 
         try {
@@ -169,7 +175,7 @@ function Paybyuser() {
                     data[value.pay_status] += value.pay_price_total;
                 }
             }
-
+            setTotalPages(Math.ceil(response.data.length / 5));
             setData(response.data);
             if ((data[0]) === undefined) {
                 setnot_received_amount("0");
@@ -1033,7 +1039,7 @@ function Paybyuser() {
                                                 </thead>
                                                 <tbody>
 
-                                                    {data.map((value, index) => (
+                                                    {currentUsers.map((value, index) => (
                                                         value.pay_status !== -1 ? (
                                                             <tr key={index}>
                                                                 <td className="text-center  text-sm font-weight-bolder opacity-8">
@@ -1078,6 +1084,15 @@ function Paybyuser() {
                                             </table>
                                         </div>
                                     </div>
+                                    <ul className="pagination justify-content-end">
+                                        {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                                            <li className={`page-item ${currentPage === page ? 'active' : ''}`}
+                                                key={page}
+                                                onClick={() => changePage(page)}>
+                                                <span className="page-link">{page}</span>
+                                            </li>
+                                        ))}
+                                    </ul>
                                 </div>
                             </div>
                         </div>

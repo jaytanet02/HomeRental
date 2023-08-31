@@ -23,7 +23,7 @@ router.post('/create', async (req, res) => {
     var currentDate = new Date();
     var formattedDate = currentDate.toISOString().split('T')[0];
     var date = new Date(formattedDate);
-    var now_year = date.getFullYear();
+    var now_year = (date.getFullYear()+543);
     var now_month = (date.getMonth() + 1).toString().padStart(2, '0');
     var now_day = date.getDate();
 
@@ -86,6 +86,7 @@ router.post('/create', async (req, res) => {
                     pay_room_electricity: value.roomData.room_electricity,
                     pay_cus_room_sum: value.cus_room_sum,
                     pay_cus_round: now_month,
+                    pay_cus_round_year: String(now_year),
                     pay_cus_datein: value.cus_datein,
                     pay_round: datefull_round,
                     pay_room_meter_water_before: value.roomData.room_meter_water,
@@ -102,6 +103,7 @@ router.post('/create', async (req, res) => {
                     pay_by: "",
                     pay_pic: "",
                     pay_status: -1,
+                    pay_payment_type: "",
                 });
 
 
@@ -294,7 +296,7 @@ router.put('/update', async (req, res) => {
             }
         };
 
-    } else if (data.typebutton === "examine") {
+    } else if (data.typebutton === "examine") { // USER กดชำระเงิน
         var data_pay_status = 1;
         var updateDocument = {
             $set: {
@@ -313,9 +315,10 @@ router.put('/update', async (req, res) => {
                 pay_date: datenow,
                 pay_by: data.session_name,
                 pay_status: data_pay_status,
+                pay_payment_type: 2, // จ่ายด้วย QR CODE
             }
         };
-    } else if (data.typebutton === "paymoney") {
+    } else if (data.typebutton === "paymoney") { //กดชำระเงิน admin
         var data_pay_status = 2;
         var updateDocument = {
             $set: {
@@ -334,6 +337,7 @@ router.put('/update', async (req, res) => {
                 pay_date: datenow,
                 pay_by: data.session_name,
                 pay_status: data_pay_status,
+                pay_payment_type: data.selectedPaymentMethod,
             }
         };
         const res_room = await client.db('home_rental').collection('payment').findOne({ pay_id: data.pay_id }, { sort: { pay_id: -1 } });

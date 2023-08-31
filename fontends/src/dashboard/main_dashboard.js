@@ -21,11 +21,14 @@ function Dashboard() {
       navigate('/main_login');
     }, 1000);
   }
+
   const [searchtext, setSearchtext] = useState("");
   const [searchmonth, setSearchmonth] = useState("");
+  const [searchyear, setSearchyear] = useState("");
   const [searchstatus, setSearchStatus] = useState("00");
   const [session_name, set_session_name] = useState("");
   const [showSaveButton, setShowSaveButton] = useState(false);
+  const [showSaveButtonPay, setshowSaveButtonPay] = useState(true);
   const [not_received_amount, setnot_received_amount] = useState("");
   const [wait_received_amount, set_wait_received_amount] = useState("");
   const [status_model, set_status_model] = useState("");
@@ -67,14 +70,17 @@ function Dashboard() {
     const lowercaseSearchTerm = searchmonth.toLowerCase();
     const lowerstatus = searchstatus.toLowerCase();
     const lowerhtext = searchtext.toLowerCase();
+    const loweryear = searchyear.toLowerCase();
 
-    if (lowercaseSearchTerm === "00" && lowerstatus === "00" && !lowerhtext) {
+    if (lowercaseSearchTerm === "00" && lowerstatus === "00" && loweryear === "0" && !lowerhtext) {
       return true; // ไม่มีการค้นหา
     }
 
     return (
       (lowercaseSearchTerm === "00" || user.pay_cus_round.toLowerCase().includes(lowercaseSearchTerm)) &&
       (lowerstatus === "00" || String(user.pay_status).toLowerCase() === lowerstatus) &&
+      (loweryear === "00" || String(user.pay_cus_round_year).toLowerCase() === loweryear) &&
+
       (!lowerhtext ||
         user.pay_cus_name.toLowerCase().includes(lowerhtext) ||
         user.pay_cus_room_name_full.toLowerCase().includes(lowerhtext) ||
@@ -100,7 +106,9 @@ function Dashboard() {
 
   const urlserver = "https://lazy-ruby-rooster-gown.cyclic.app";
   useEffect(() => {
-    fetchUsers();
+    return () => {
+      fetchUsers();
+    };
   }, []);
 
 
@@ -121,6 +129,60 @@ function Dashboard() {
       });
       console.log(response.data);
 
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const sumtotal_dashboard = async (value) => {
+
+    try {
+      const response = await axios.get(urlserver + `/api_payment`);
+      const data = {}; // สร้างออบเจ็กต์เปล่าเพื่อเก็บข้อมูล
+      const arr = response.data;
+      for (const value of arr) {
+        if (!data[value.pay_cus_round]) {
+          data[value.pay_cus_round] = {}; // สร้างอ็อบเจกต์ย่อยสำหรับรอบลูกค้า (x)
+        }
+
+        if (!data[value.pay_cus_round][value.pay_status]) {
+          data[value.pay_cus_round][value.pay_status] = value.pay_price_total; // กำหนดค่าในอ็อบเจกต์ย่อย (y)
+        } else {
+          data[value.pay_cus_round][value.pay_status] += value.pay_price_total; // เพิ่มค่าในอ็อบเจกต์ย่อย (y)
+        }
+
+        // เพิ่มค่าในตำแหน่ง "00" สำหรับยอดรวมทั้งหมดที่มีสถานะเดียวกัน
+        if (!data["00"]) {
+          data["00"] = {};
+        }
+        if (!data["00"][value.pay_status]) {
+          data["00"][value.pay_status] = value.pay_price_total;
+        } else {
+          data["00"][value.pay_status] += value.pay_price_total;
+        }
+      }
+      console.log(data[value]);
+      if (data[value] !== undefined) {
+        if ((data[value][0]) === undefined) {
+          setnot_received_amount("0");
+        } else {
+          setnot_received_amount(data[value][0]);
+        }
+        if ((data[value][1]) === undefined) {
+          set_wait_received_amount("0");
+        } else {
+          set_wait_received_amount(data[value][1]);
+        }
+        if ((data[value][2]) === undefined) {
+          setreceived_amount("0");
+        } else {
+          setreceived_amount(data[value][2]);
+        }
+      } else {
+        setnot_received_amount("0");
+        set_wait_received_amount("0");
+        setreceived_amount("0");
+      }
     } catch (error) {
       console.error(error);
     }
@@ -212,13 +274,13 @@ function Dashboard() {
       var currentDate = new Date();
       var formattedDate = currentDate.toISOString().split('T')[0];
       var date = new Date(formattedDate);
-      // var now_year = date.getFullYear();
+      var now_year = date.getFullYear() + 543;
       var now_month = (date.getMonth() + 1).toString().padStart(2, '0');
       // var now_day = date.getDate();
 
-      console.log(data);
-      setSearchmonth(now_month)
 
+      setSearchmonth(now_month);
+      setSearchyear(String(now_year));
       setData(response.data);
       if ((data[now_month][0]) === undefined) {
         setnot_received_amount("0");
@@ -268,19 +330,27 @@ function Dashboard() {
       set_pay_room_water(response.data[0].pay_room_water.toLocaleString());
       set_pay_room_electricity(response.data[0].pay_room_electricity.toLocaleString());
       set_session_name(usersession.user_name);
-
-
-      if (response.data[0].pay_pic !== "") {
-
+      if (response.data[0].pay_payment_type === "") {
+        setShowshowqr(false);
+        setSelectedPaymentMethod(1);
+      } else {
+        setSelectedPaymentMethod(response.data[0].pay_payment_type);
+      }
+      if (response.data[0].pay_status===2) {
+        setshowSaveButtonPay(false);//ปิดปุ่มชำระเงิน
+      }else{
+        setshowSaveButtonPay(true);
+      }
+      if (response.data[0].pay_pic === "") {
+        set_status_modal_button_bin("hidden");
+      } else if (response.data[0].pay_pic !== "") {
         const api_bin = await axios.get(urlserver + `/api_payment/pic_bin/file?fileName=${response.data[0].pay_pic}`, {
           responseType: 'arraybuffer' // ให้ Axios รับ response เป็น arraybuffer
         });
         const imageBlob = new Blob([api_bin.data], { type: 'image/jpeg' });
         const imageUrl = URL.createObjectURL(imageBlob);
         set_pic_bin(imageUrl);
-
       }
-
       const date = new Date(response.data[0].pay_round);
       const datenow = new Date();
       let date_fine = 0; // เริ่มต้นเป็น 0
@@ -289,8 +359,6 @@ function Dashboard() {
         date_fine = Math.floor(timeDifference / (1000 * 3600 * 24)); // แปลงเป็นจำนวนวัน
       }
       setdate_fine(date_fine);
-
-
       setShowModaledit(true);
       qr_code(response.data[0].pay_price_total.toLocaleString());
     } catch (error) {
@@ -495,7 +563,7 @@ function Dashboard() {
     }
   };
   const edit_pay = (type, id) => {
-    fetchedit(id);
+
     if (type === "edit") {
       set_status_model("");
       set_status_modal_button("");
@@ -508,7 +576,7 @@ function Dashboard() {
       set_status_modal_button_bin("");
       set_text_titel_model("ตรวจสอบการชำระเงิน");
     }
-
+    fetchedit(id);
   };
   const closeModal = () => {
     setShowModaledit(false);
@@ -532,6 +600,7 @@ function Dashboard() {
   };
   const handleSignup = async (e, typebutton) => {
     e.preventDefault();
+
     var text_title, path_pic, text_imageWidth, text_imageHeight;
     // pay_price_total ดึงจาก useState 
 
@@ -581,6 +650,7 @@ function Dashboard() {
             pay_room_bin_price,
             pay_price_total,
             typebutton,
+            selectedPaymentMethod,
             session_name,
           });
 
@@ -633,7 +703,7 @@ function Dashboard() {
                     <div className="row">
                       <div className="col-8">
                         <div className="numbers">
-                          <p className="text-sm mb-0 text-uppercase font-weight-bold">ยอดที่ค้างชำระทั้งหมด</p>
+                          <p className="text-sm mb-0 text-uppercase font-weight-bold">รอชำระเงิน</p>
                           <h5 className="font-weight-bolder">
                             <span className="text-danger text-m font-weight-bolder">{bathformat(not_received_amount)} </span>
                             บาท
@@ -661,7 +731,7 @@ function Dashboard() {
                     <div className="row">
                       <div className="col-8">
                         <div className="numbers">
-                          <p className="text-sm mb-0 text-uppercase font-weight-bold">ยอดที่รอการตรวจสอบ</p>
+                          <p className="text-sm mb-0 text-uppercase font-weight-bold">รอการตรวจสอบ</p>
                           <h5 className="font-weight-bolder">
                             <span className="text-warning text-m font-weight-bolder">{bathformat(wait_received_amount)} </span>
                             บาท
@@ -687,7 +757,7 @@ function Dashboard() {
                     <div className="row">
                       <div className="col-8">
                         <div className="numbers">
-                          <p className="text-sm mb-0 text-uppercase font-weight-bold">ยอดที่ได้รับทั้งสิ้น</p>
+                          <p className="text-sm mb-0 text-uppercase font-weight-bold">ชำระเงินเรียบร้อย</p>
                           <h5 className="font-weight-bolder">
                             <span className="text-success text-m font-weight-bolder">{bathformat(received_amount)} </span>
                             บาท
@@ -712,12 +782,16 @@ function Dashboard() {
           </div>
 
           <div className="d-flex justify-content-center align-items-center container-fluid">
-            <div className="input-group" style={{ maxWidth: '200px' }}>
+            <div className="input-group" style={{ maxWidth: '250px' }}>
               <select
                 className="form-select border-1 small text-right"
                 aria-label="Select Month"
                 value={searchmonth}
-                onChange={(e) => setSearchmonth(e.target.value)}>
+                onChange={(e) => {
+                  sumtotal_dashboard(e.target.value);
+                  setSearchmonth(e.target.value);
+
+                }}>
                 <option value="00">ทั้งหมด</option>
                 <option value="01">มกราคม</option>
                 <option value="02">กุมภาพันธ์</option>
@@ -733,7 +807,25 @@ function Dashboard() {
                 <option value="12">ธันวาคม</option>
               </select>
             </div>&nbsp;&nbsp;
-            <div className="input-group" style={{ maxWidth: '200px' }}>
+            <div className="input-group" style={{ maxWidth: '250px' }}>
+              <select
+                className="form-select border-1 small text-right"
+                aria-label="Select year"
+                value={searchyear}
+                onChange={(e) => setSearchyear(e.target.value.toString())}>
+                <option value="00">ทั้งหมด</option>
+                <option value="2566">2566</option>
+                <option value="2567">2567</option>
+                <option value="2568">2568</option>
+                <option value="2569">2569</option>
+                <option value="2570">2570</option>
+                <option value="2571">2571</option>
+                <option value="2572">2572</option>
+                <option value="2573">2573</option>
+              </select>
+
+            </div>&nbsp;&nbsp;
+            <div className="input-group" style={{ maxWidth: '250px' }}>
               <select
                 className="form-select border-1 small text-right"
                 aria-label="Select status"
@@ -746,7 +838,11 @@ function Dashboard() {
                 <option value="2">ชำระเงินเรียบร้อย</option>
               </select>
             </div>&nbsp;&nbsp;
-            <div className="input-group" style={{ maxWidth: '200px' }}>
+
+          </div><br />
+
+          <div className="d-flex justify-content-center align-items-center container-fluid">
+            <div className="input-group" style={{ maxWidth: '770px' }}>
               <input
                 type="text"
                 className="form-control border-1 small text-right"
@@ -784,46 +880,45 @@ function Dashboard() {
 
                           {currentUsers.map((value, index) => (
 
-         
-                              <tr key={index}>
-                                <td className="text-center  text-sm font-weight-bolder opacity-8">
-                                  {value.pay_cus_name}<br />
-                                  <span style={{ color: "green" }}>{value.roomData.room_name + ' ' + value.roomData.room_typename}</span>
-                                </td>
-                                <td className="text-center text-sm font-weight-bolder opacity-8">
-                                  {bathformat(value.pay_price_total)}
-                                </td>
-                                <td className="text-center ">
-                                  <span className={formatDate("color", value.pay_round)}>{formatDate("format_date", value.pay_round)} </span>
-                                </td>
+                            <tr key={index}>
+                              <td className="text-center  text-sm font-weight-bolder opacity-8">
+                                {value.pay_cus_name}<br />
+                                <span style={{ color: "green" }}>{value.roomData.room_name + ' ' + value.roomData.room_typename}</span>
+                              </td>
 
+                              <td className="text-center text-sm font-weight-bolder opacity-8">
+                                {bathformat(value.pay_price_total)}
+                              </td>
 
-                                <td className="text-center ">
-                                  <span className={textstatus("color", value.pay_status)}>{textstatus("text", value.pay_status)} </span>
-                                </td>
+                              <td className="text-center ">
+                                <span className={formatDate("color", value.pay_round)}>{formatDate("format_date", value.pay_round)} </span>
+                              </td>
 
+                              <td className="text-center ">
+                                <span className={textstatus("color", value.pay_status)}>{textstatus("text", value.pay_status)} </span>
+                              </td>
 
-                                <td className="text-center ">
-                                  {value.pay_status === 1 || value.pay_status === 2 ? (
-                                    <button className="btn btn-warning" type='button' onClick={() => edit_pay("examine", value.pay_id)}>
-                                      <i className="fa-regular fa-pen-to-square"></i>
-                                    </button>
-                                  ) : null}
-                                  &nbsp;
-                                  {value.pay_status === -1 || value.pay_status === 0 ? (
-                                    <button className="btn btn-success" type='button' onClick={() => edit_pay("edit", value.pay_id)}>
-                                      <i className="fa-regular fa-pen-to-square"></i>
-                                    </button>
-                                  ) : null}
-                                  &nbsp;
-                                  {value.pay_status === 0 || value.pay_status === -1 ? (
+                              <td className="text-center ">
+                                {value.pay_status === 1 || value.pay_status === 2 ? (
+                                  <button className="btn btn-warning" type='button' onClick={() => edit_pay("examine", value.pay_id)}>
+                                    <i className="fa-regular fa-pen-to-square"></i>
+                                  </button>
+                                ) : null}
+                                &nbsp;
+                                {value.pay_status === -1 || value.pay_status === 0 ? (
+                                  <button className="btn btn-success" type='button' onClick={() => edit_pay("edit", value.pay_id)}>
+                                    <i className="fa-regular fa-pen-to-square"></i>
+                                  </button>
+                                ) : null}
+                                &nbsp;
+                                {value.pay_status === 0 || value.pay_status === -1 ? (
                                   <button className="btn btn-danger" type='button' onClick={() => deleteRow(value.pay_id)}>
                                     <i className="fa-solid fa-trash-can"></i>
                                   </button>
-                                  ) : null}
-                                </td>
-                              </tr>
-                     
+                                ) : null}
+                              </td>
+
+                            </tr>
                           ))}
                         </tbody>
 
@@ -839,7 +934,6 @@ function Dashboard() {
                       </li>
                     ))}
                   </ul>
-
                 </div>
               </div>
             </div>
@@ -1088,7 +1182,7 @@ function Dashboard() {
                 <br />
 
                 <div className="d-flex flex-fill justify-content-between "   >
-                  <Button hidden={status_modal_button === "hidden"}
+                  <Button
                     className={`btn ${selectedPaymentMethod === 1 ? "btn-success" : "btn-light"} flex-grow-1 mr-1`}
                     onClick={() => {
                       setSelectedPaymentMethod(1);
@@ -1098,7 +1192,7 @@ function Dashboard() {
                     ชำระด้วยเงินสด
                   </Button>
                   &nbsp;&nbsp;
-                  <Button hidden={status_modal_button === "hidden"}
+                  <Button
                     className={`btn ${selectedPaymentMethod === 2 ? "btn-success" : "btn-light"} flex-grow-1 ml-1`}
                     onClick={() => {
                       setSelectedPaymentMethod(2);
@@ -1108,7 +1202,7 @@ function Dashboard() {
                     ชำระด้วย QR CODE
                   </Button>
                 </div>
-                <div hidden={status_modal_button_bin === "hidden"} ><center>
+                <div hidden={status_modal_button_bin === "hidden"}  ><center>
                   <img src={pic_bin} width={300} height={450} alt="bin" />
                 </center>
                 </div>
@@ -1129,19 +1223,25 @@ function Dashboard() {
                       บันทึก
                     </Button>
                   )}
-                  <Button variant="success" type="submit" onClick={(e) => handleSignup(e, "paymoney")}>
-                    ชำระเงิน
-                  </Button>
-                  <Button variant="danger" onClick={closeModal}>
-                    ปิด
-                  </Button>
+                
+                   
+                    {showSaveButtonPay && (
+                      <Button variant="success" type="submit" onClick={(e) => handleSignup(e, "paymoney")}>
+                        ชำระเงิน
+                      </Button>
+                       )}
+                      <Button variant="danger" onClick={closeModal}>
+                        ปิด
+                      </Button>
+                  
+                 
                 </Modal.Footer>
               </Form>
             </Modal.Body>
           </Modal>
 
         </main>
-      </body>
+      </body >
     </>
   )
 
