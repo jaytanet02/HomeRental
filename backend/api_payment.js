@@ -381,6 +381,11 @@ router.get('/', async (req, res) => {
             },
             {
                 $unwind: '$roomData'
+            },
+            {
+                $sort: {
+                    pay_status: 1 // 1 คือเรียงจากน้อยไปมาก
+                }
             }
         ]).toArray();
 
@@ -398,7 +403,11 @@ router.get('/', async (req, res) => {
             {
                 $unwind: '$roomData'
             },
-
+            {
+                $sort: {
+                    pay_status: 1 // 1 คือเรียงจากน้อยไปมาก
+                }
+            }
         ]).toArray();
 
 

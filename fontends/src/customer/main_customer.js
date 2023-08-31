@@ -63,6 +63,23 @@ const Maincustomer = () => {
 
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
+    const ob_status = {
+        1: 'พักอาศัย',
+        2: 'ออก',
+    };
+    const filteredUsers = users.filter(user => {
+        const lowercaseSearchTerm = searchTerm.toLowerCase();
+        return (
+            user.cus_name.toLowerCase().includes(lowercaseSearchTerm) ||
+            roomTypenames[user.cus_room_id].toLowerCase().includes(lowercaseSearchTerm) ||
+            String(ob_status[user.cus_status]).toLowerCase().includes(lowercaseSearchTerm)
+        );
+    });
+
+    const startIndex = (currentPage - 1) * 5;
+    const endIndex = currentPage * 5;
+    const currentUsers = filteredUsers.slice(startIndex, endIndex);
+
 
     // const urlserver = "http://localhost:4000";
     // useEffect(() => {
@@ -81,6 +98,14 @@ const Maincustomer = () => {
         fettyperoom();
 
     }, []);
+
+
+    useEffect(() => {
+        const calculatedTotalPages = Math.ceil(filteredUsers.length / 5);
+        setTotalPages(calculatedTotalPages);
+    }, [filteredUsers]);
+
+
 
     const changePage = (page) => {
         setCurrentPage(page);
@@ -289,10 +314,7 @@ const Maincustomer = () => {
         });
     };
 
-    const ob_status = {
-        1: 'พักอาศัย',
-        2: 'ออก',
-    };
+
 
     const openModal = () => {
         setShowModal(true);
@@ -431,18 +453,6 @@ const Maincustomer = () => {
             console.error(error);
         }
     };
-    const filteredUsers = users.filter(user => {
-        const lowercaseSearchTerm = searchTerm.toLowerCase();
-        return (
-            user.cus_name.toLowerCase().includes(lowercaseSearchTerm) ||
-            roomTypenames[user.cus_room_id].toLowerCase().includes(lowercaseSearchTerm) ||
-            String(ob_status[user.cus_status]).toLowerCase().includes(lowercaseSearchTerm)
-        );
-    });
-
-    const startIndex = (currentPage - 1) * 5;
-    const endIndex = currentPage * 5;
-    const currentUsers = filteredUsers.slice(startIndex, endIndex);
 
     return (
         <>

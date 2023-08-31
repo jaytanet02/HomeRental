@@ -54,7 +54,29 @@ const Customers = () => {
   useEffect(() => {
     fetchUsers();
   }, []);
+  
+  
+  const filteredUsers = users.filter(user => {
+    const lowercaseSearchTerm = searchTerm.toLowerCase();
 
+    return (
+      user.user_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.user_username.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.user_password.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.user_status.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      String(ob_statuss(user.user_usage)).toLowerCase() === lowercaseSearchTerm
+    );
+  });
+  const startIndex = (currentPage - 1) * 5;
+  const endIndex = currentPage * 5;
+  const currentUsers = filteredUsers.slice(startIndex, endIndex); // ใช้ filteredUsers ที่ผ่านการกรองแล้ว
+
+
+  useEffect(() => {
+    const calculatedTotalPages = Math.ceil(filteredUsers.length / 5);
+    setTotalPages(calculatedTotalPages);
+  }, [filteredUsers]);
+  
 
   const changePage = (page) => {
     setCurrentPage(page);
@@ -215,20 +237,6 @@ const Customers = () => {
   };
 
 
-  const filteredUsers = users.filter(user => {
-    const lowercaseSearchTerm = searchTerm.toLowerCase();
-    return (
-      user.user_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.user_username.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.user_password.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.user_status.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      String(ob_statuss(user.user_usage)).toLowerCase() === lowercaseSearchTerm
-    );
-  });
-  const startIndex = (currentPage - 1) * 5;
-  const endIndex = currentPage * 5;
-  const currentUsers = filteredUsers.slice(startIndex, endIndex); // ใช้ filteredUsers ที่ผ่านการกรองแล้ว
-
   return (
     <>
       <Indexmain />
@@ -237,10 +245,10 @@ const Customers = () => {
         <main className="main-content position-relative border-radius-lg ">
           {/* table */}
           <br />
-          
+
           <div className="d-flex justify-content-between align-items-center container-fluid">
             <button type="button" className="btn btn-success" onClick={openModal}>
-              เพิ่มข้อมูลผู้ใช้
+              เพิ่มข้อมูล
             </button>
             <div className="input-group" style={{ maxWidth: '200px' }}>
               <input

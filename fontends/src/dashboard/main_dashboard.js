@@ -21,7 +21,9 @@ function Dashboard() {
       navigate('/main_login');
     }, 1000);
   }
-  // const [searchTerm, setSearchTerm] = useState("");
+  const [searchtext, setSearchtext] = useState("");
+  const [searchmonth, setSearchmonth] = useState("");
+  const [searchstatus, setSearchStatus] = useState("00");
   const [session_name, set_session_name] = useState("");
   const [showSaveButton, setShowSaveButton] = useState(false);
   const [not_received_amount, setnot_received_amount] = useState("");
@@ -52,12 +54,41 @@ function Dashboard() {
   const [pay_room_meter_electricity_before, set_pay_room_meter_electricity_before] = useState("");
   const [pay_room_water, set_pay_room_water] = useState("");
   const [pay_room_electricity, set_pay_room_electricity] = useState("");
-
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
 
   const [data, setData] = useState([]);
   // const [showModal, setShowModal] = useState(false);
   const [showModaledit, setShowModaledit] = useState(false);
   const [showqr, setShowshowqr] = useState(false);
+
+
+  const filteredUsers = data.filter(user => {
+    const lowercaseSearchTerm = searchmonth.toLowerCase();
+    const lowerstatus = searchstatus.toLowerCase();
+    const lowerhtext = searchtext.toLowerCase();
+
+    if (lowercaseSearchTerm === "00" && lowerstatus === "00" && !lowerhtext) {
+      return true; // ไม่มีการค้นหา
+    }
+
+    return (
+      (lowercaseSearchTerm === "00" || user.pay_cus_round.toLowerCase().includes(lowercaseSearchTerm)) &&
+      (lowerstatus === "00" || String(user.pay_status).toLowerCase() === lowerstatus) &&
+      (!lowerhtext ||
+        user.pay_cus_name.toLowerCase().includes(lowerhtext) ||
+        user.pay_cus_room_name_full.toLowerCase().includes(lowerhtext) ||
+        String(user.pay_price_total).toLowerCase().includes(lowerhtext) ||
+        String(user.pay_round).toLowerCase().includes(lowerhtext))
+    )
+  });
+
+
+
+  const startIndex = (currentPage - 1) * 5;
+  const endIndex = currentPage * 5;
+  const currentUsers = filteredUsers.slice(startIndex, endIndex);
+
 
   // const urlserver = "http://localhost:4000";
   // useEffect(() => {
@@ -72,8 +103,18 @@ function Dashboard() {
     fetchUsers();
   }, []);
 
-  const notify = async (data) => {
 
+  useEffect(() => {
+    const calculatedTotalPages = Math.ceil(filteredUsers.length / 5);
+    setTotalPages(calculatedTotalPages);
+  }, [filteredUsers]);
+
+
+  const changePage = (page) => {
+    setCurrentPage(page);
+  };
+
+  const notify = async (data) => {
     try {
       const response = await axios.post(urlserver + `/api_payment/notify`, {
         message: data,
@@ -106,24 +147,29 @@ function Dashboard() {
   }
 
   function textstatus(type, text) {
-    if (type === "text" && text === -1) {
-      return `รอคิดค่าเช่าบ้าน`;
-    } else if (type === "text" && text === 0) {
-      return `รอชำระเงิน`;
-    } else if (type === "text" && text === 1) {
-      return `รอการตรวจสอบ`;
-    } else if (type === "text" && text === 2) {
-      return `ชำระเงินเรียบร้อย`;
-    } if (type === "color" && text === -1) {
-      return `badge badge-sm bg-gradient-danger`;
-    } else if (type === "color" && text === 0) {
-      return `badge badge-sm bg-gradient-info`;
-    } else if (type === "color" && text === 1) {
-      return `badge badge-sm bg-gradient-warning`;
-    } else if (type === "color" && text === 2) {
-      return `badge badge-sm bg-gradient-success`;
+    if (type === "text") {
+      if (text === -1) {
+        return `รอคิดค่าเช่าบ้าน`;
+      } else if (text === 0) {
+        return `รอชำระเงิน`;
+      } else if (text === 1) {
+        return `รอการตรวจสอบ`;
+      } else if (text === 2) {
+        return `ชำระเงินเรียบร้อย`;
+      }
+    } else if (type === "color") {
+      if (text === -1) {
+        return `badge badge-sm bg-gradient-danger`;
+      } else if (text === 0) {
+        return `badge badge-sm bg-gradient-info`;
+      } else if (text === 1) {
+        return `badge badge-sm bg-gradient-warning`;
+      } else if (text === 2) {
+        return `badge badge-sm bg-gradient-success`;
+      }
     }
   }
+
 
 
   function bathformat(data) {
@@ -135,7 +181,7 @@ function Dashboard() {
 
 
   }
-  const fetchUsers = async () => {
+  const fetchUsers = async (month) => {
 
     try {
       await axios.post(urlserver + `/api_payment/create`);
@@ -143,33 +189,57 @@ function Dashboard() {
       const data = {}; // สร้างออบเจ็กต์เปล่าเพื่อเก็บข้อมูล
       const arr = response.data;
       for (const value of arr) {
-        if (!data[value.pay_status]) {
-          data[value.pay_status] = value.pay_price_total;
+        if (!data[value.pay_cus_round]) {
+          data[value.pay_cus_round] = {}; // สร้างอ็อบเจกต์ย่อยสำหรับรอบลูกค้า (x)
+        }
+
+        if (!data[value.pay_cus_round][value.pay_status]) {
+          data[value.pay_cus_round][value.pay_status] = value.pay_price_total; // กำหนดค่าในอ็อบเจกต์ย่อย (y)
         } else {
-          data[value.pay_status] += value.pay_price_total;
+          data[value.pay_cus_round][value.pay_status] += value.pay_price_total; // เพิ่มค่าในอ็อบเจกต์ย่อย (y)
+        }
+
+        // เพิ่มค่าในตำแหน่ง "00" สำหรับยอดรวมทั้งหมดที่มีสถานะเดียวกัน
+        if (!data["00"]) {
+          data["00"] = {};
+        }
+        if (!data["00"][value.pay_status]) {
+          data["00"][value.pay_status] = value.pay_price_total;
+        } else {
+          data["00"][value.pay_status] += value.pay_price_total;
         }
       }
+      var currentDate = new Date();
+      var formattedDate = currentDate.toISOString().split('T')[0];
+      var date = new Date(formattedDate);
+      // var now_year = date.getFullYear();
+      var now_month = (date.getMonth() + 1).toString().padStart(2, '0');
+      // var now_day = date.getDate();
+
+      console.log(data);
+      setSearchmonth(now_month)
 
       setData(response.data);
-      if ((data[0]) === undefined) {
+      if ((data[now_month][0]) === undefined) {
         setnot_received_amount("0");
       } else {
-        setnot_received_amount(data[0]);
+        setnot_received_amount(data[now_month][0]);
       }
-      if ((data[1]) === undefined) {
+      if ((data[now_month][1]) === undefined) {
         set_wait_received_amount("0");
       } else {
-        set_wait_received_amount(data[1]);
+        set_wait_received_amount(data[now_month][1]);
       }
-      if ((data[2]) === undefined) {
+      if ((data[now_month][2]) === undefined) {
         setreceived_amount("0");
       } else {
-        setreceived_amount(data[2]);
+        setreceived_amount(data[now_month][2]);
       }
     } catch (error) {
       console.error(error);
     }
   };
+
 
   const fetchedit = async (id) => {
     try {
@@ -555,7 +625,7 @@ function Dashboard() {
         <Navbar />
         <main className="main-content position-relative border-radius-lg ">
 
-          <div className="container-fluid py-4 ">
+          <div className="container-fluid py-5 ">
             <div className="row">
               <div className="col-xl-3 col-sm-6 mb-xl-0 mb-4">
                 <div className="card">
@@ -637,8 +707,145 @@ function Dashboard() {
                 </div>
               </div>
 
+
             </div>
           </div>
+
+          <div className="d-flex justify-content-center align-items-center container-fluid">
+            <div className="input-group" style={{ maxWidth: '200px' }}>
+              <select
+                className="form-select border-1 small text-right"
+                aria-label="Select Month"
+                value={searchmonth}
+                onChange={(e) => setSearchmonth(e.target.value)}>
+                <option value="00">ทั้งหมด</option>
+                <option value="01">มกราคม</option>
+                <option value="02">กุมภาพันธ์</option>
+                <option value="03">มีนาคม</option>
+                <option value="04">เมษายน</option>
+                <option value="05">พฤษภาคม</option>
+                <option value="06">มิถุนายน</option>
+                <option value="07">กรกฎาคม</option>
+                <option value="08">สิงหาคม</option>
+                <option value="09">กันยายน</option>
+                <option value="10">ตุลาคม</option>
+                <option value="11">พฤศจิกายน</option>
+                <option value="12">ธันวาคม</option>
+              </select>
+            </div>&nbsp;&nbsp;
+            <div className="input-group" style={{ maxWidth: '200px' }}>
+              <select
+                className="form-select border-1 small text-right"
+                aria-label="Select status"
+                value={searchstatus}
+                onChange={(e) => setSearchStatus(e.target.value)}>
+                <option value="00">ทั้งหมด</option>
+                <option value="-1">รอคิดค่าเช่าบ้าน</option>
+                <option value="0">รอชำระเงิน</option>
+                <option value="1">รอการตรวจสอบ</option>
+                <option value="2">ชำระเงินเรียบร้อย</option>
+              </select>
+            </div>&nbsp;&nbsp;
+            <div className="input-group" style={{ maxWidth: '200px' }}>
+              <input
+                type="text"
+                className="form-control border-1 small text-right"
+                placeholder="ค้นหาข้อมูล"
+                aria-label="Search"
+                aria-describedby="basic-addon2"
+                value={searchtext}
+                onChange={(e) => setSearchtext(e.target.value)}
+              />
+            </div>
+          </div><br />
+          {/* table */}
+          <div className="container-fluid py-4">
+
+
+            <div className="row">
+              <div className="col-12">
+                <div className="card mb-4">
+                  <div className="card-header pb-0">
+                    <h6>ค่าเช่าที่ต้องเก็บ</h6>
+                  </div>
+                  <div className="card-body px-0 pt-0 pb-2">
+                    <div className="table-responsive p-0">
+                      <table className="table align-items-center mb-0">
+                        <thead>
+                          <tr>
+                            <th className="text-center  text-secondary text-sm font-weight-bolder opacity-7">ชื่อ<br />เลขห้อง<br />ประเภทห้อง</th>
+                            <th className="text-center  text-secondary text-sm font-weight-bolder opacity-7">ยอดที่<br />ต้องชำระ</th>
+                            <th className="text-center  text-secondary text-sm font-weight-bolder opacity-7">งวด<br />เดือน/ปี</th>
+                            <th className="text-center  text-secondary text-sm font-weight-bolder opacity-7">สถานะ</th>
+                            <th className="text-center opacity-7">#</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+
+                          {currentUsers.map((value, index) => (
+
+         
+                              <tr key={index}>
+                                <td className="text-center  text-sm font-weight-bolder opacity-8">
+                                  {value.pay_cus_name}<br />
+                                  <span style={{ color: "green" }}>{value.roomData.room_name + ' ' + value.roomData.room_typename}</span>
+                                </td>
+                                <td className="text-center text-sm font-weight-bolder opacity-8">
+                                  {bathformat(value.pay_price_total)}
+                                </td>
+                                <td className="text-center ">
+                                  <span className={formatDate("color", value.pay_round)}>{formatDate("format_date", value.pay_round)} </span>
+                                </td>
+
+
+                                <td className="text-center ">
+                                  <span className={textstatus("color", value.pay_status)}>{textstatus("text", value.pay_status)} </span>
+                                </td>
+
+
+                                <td className="text-center ">
+                                  {value.pay_status === 1 || value.pay_status === 2 ? (
+                                    <button className="btn btn-warning" type='button' onClick={() => edit_pay("examine", value.pay_id)}>
+                                      <i className="fa-regular fa-pen-to-square"></i>
+                                    </button>
+                                  ) : null}
+                                  &nbsp;
+                                  {value.pay_status === -1 || value.pay_status === 0 ? (
+                                    <button className="btn btn-success" type='button' onClick={() => edit_pay("edit", value.pay_id)}>
+                                      <i className="fa-regular fa-pen-to-square"></i>
+                                    </button>
+                                  ) : null}
+                                  &nbsp;
+                                  {value.pay_status === 0 || value.pay_status === -1 ? (
+                                  <button className="btn btn-danger" type='button' onClick={() => deleteRow(value.pay_id)}>
+                                    <i className="fa-solid fa-trash-can"></i>
+                                  </button>
+                                  ) : null}
+                                </td>
+                              </tr>
+                     
+                          ))}
+                        </tbody>
+
+                      </table>
+                    </div>
+                  </div>
+                  <ul className="pagination justify-content-end">
+                    {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                      <li className={`page-item ${currentPage === page ? 'active' : ''}`}
+                        key={page}
+                        onClick={() => changePage(page)}>
+                        <span className="page-link">{page}</span>
+                      </li>
+                    ))}
+                  </ul>
+
+                </div>
+              </div>
+            </div>
+          </div>
+
+
 
 
           {/* <add> */}
@@ -932,128 +1139,6 @@ function Dashboard() {
               </Form>
             </Modal.Body>
           </Modal>
-
-          {/* table */}
-          <div className="container-fluid py-4">
-            {/* <div className="d-flex justify-content-between align-items-center container-fluid">
-              <div className="input-group" style={{ maxWidth: '200px' }}>
-                <select
-                  className="form-select border-1 small text-right"
-                  aria-label="Select Month"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}>
-                  <option value="0">ทั้งหมด</option>
-                  <option value="01">มกราคม</option>
-                  <option value="02">กุมภาพันธ์</option>
-                  <option value="03">มีนาคม</option>
-                  <option value="04">เมษายน</option>
-                  <option value="05">พฤษภาคม</option>
-                  <option value="06">มิถุนายน</option>
-                  <option value="07">กรกฎาคม</option>
-                  <option value="08">สิงหาคม</option>
-                  <option value="09">กันยายน</option>
-                  <option value="10">ตุลาคม</option>
-                  <option value="11">พฤศจิกายน</option>
-                  <option value="12">ธันวาคม</option>
-                </select>
-              </div>
-              <div className="input-group" style={{ maxWidth: '200px' }}>
-                <select
-                  className="form-select border-1 small text-right"
-                  aria-label="Select Month"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}>
-                  <option value="0">ทั้งหมด</option>
-                  <option value="01">มกราคม</option>
-                  <option value="02">กุมภาพันธ์</option>
-                  <option value="03">มีนาคม</option>
-                  <option value="04">เมษายน</option>
-                  <option value="05">พฤษภาคม</option>
-                  <option value="06">มิถุนายน</option>
-                  <option value="07">กรกฎาคม</option>
-                  <option value="08">สิงหาคม</option>
-                  <option value="09">กันยายน</option>
-                  <option value="10">ตุลาคม</option>
-                  <option value="11">พฤศจิกายน</option>
-                  <option value="12">ธันวาคม</option>
-                </select>
-              </div>
-            </div><br /> */}
-
-            <div className="row">
-              <div className="col-12">
-                <div className="card mb-4">
-                  <div className="card-header pb-0">
-                    <h6>ค่าเช่าที่ต้องเก็บ</h6>
-                  </div>
-                  <div className="card-body px-0 pt-0 pb-2">
-                    <div className="table-responsive p-0">
-                      <table className="table align-items-center mb-0">
-                        <thead>
-                          <tr>
-                            <th className="text-center  text-secondary text-sm font-weight-bolder opacity-7">ชื่อ<br />เลขห้อง<br />ประเภทห้อง</th>
-                            <th className="text-center  text-secondary text-sm font-weight-bolder opacity-7">ยอดที่<br />ต้องชำระ</th>
-                            <th className="text-center  text-secondary text-sm font-weight-bolder opacity-7">งวด<br />เดือน/ปี</th>
-                            <th className="text-center  text-secondary text-sm font-weight-bolder opacity-7">สถานะ</th>
-                            <th className="text-center opacity-7">#</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-
-                          {data.map((value, index) => (
-
-                            value.pay_status === -1 || value.pay_status === 0 || value.pay_status === 1 ? (
-                              <tr key={index}>
-                                <td className="text-center  text-sm font-weight-bolder opacity-8">
-                                  {value.pay_cus_name}<br />
-                                  <span style={{ color: "green" }}>{value.roomData.room_name + ' ' + value.roomData.room_typename}</span>
-                                </td>
-                                <td className="text-center text-sm font-weight-bolder opacity-8">
-                                  {bathformat(value.pay_price_total)}
-                                </td>
-                                <td className="text-center ">
-                                  <span className={formatDate("color", value.pay_round)}>{formatDate("format_date", value.pay_round)} </span>
-                                </td>
-
-
-                                <td className="text-center ">
-                                  <span className={textstatus("color", value.pay_status)}>{textstatus("text", value.pay_status)} </span>
-                                </td>
-
-
-                                <td className="text-center ">
-                                  {value.pay_status === 1 ? (
-                                    <button className="btn btn-warning" type='button' onClick={() => edit_pay("examine", value.pay_id)}>
-                                      <i className="fa-regular fa-pen-to-square"></i>
-                                    </button>
-                                  ) : null}
-                                  &nbsp;
-                                  {value.pay_status === -1 || value.pay_status === 0 ? (
-                                    <button className="btn btn-success" type='button' onClick={() => edit_pay("edit", value.pay_id)}>
-                                      <i className="fa-regular fa-pen-to-square"></i>
-                                    </button>
-                                  ) : null}
-                                  &nbsp;
-                                  <button className="btn btn-danger" type='button' onClick={() => deleteRow(value.pay_id)}>
-                                    <i className="fa-solid fa-trash-can"></i>
-                                  </button>
-                                </td>
-                              </tr>
-                            ) : null
-                          ))}
-                        </tbody>
-
-                      </table>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-
-
-
 
         </main>
       </body>

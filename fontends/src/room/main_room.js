@@ -52,6 +52,23 @@ const Customers = () => {
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
 
+    const ob_status = {
+        1: 'ว่าง',
+        2: 'ไม่ว่าง',
+    };
+    const filteredUsers = users.filter(user => {
+        const lowercaseSearchTerm = searchTerm.toLowerCase();
+        return (
+            user.room_typename.toLowerCase().includes(lowercaseSearchTerm) ||
+            user.room_name.toLowerCase().includes(lowercaseSearchTerm) ||
+            String(ob_status[user.room_status]).toLowerCase() === lowercaseSearchTerm
+        );
+    });
+    
+    const startIndex = (currentPage - 1) * 5;
+    const endIndex = currentPage * 5;
+    const currentUsers = filteredUsers.slice(startIndex, endIndex);
+
     // const urlserver = "http://localhost:4000";
     // useEffect(() => {
     //     return () => {
@@ -67,9 +84,14 @@ const Customers = () => {
         fetchUsers();
     }, []);
 
-    // const startIndex = (currentPage - 1) * 5;
-    // const endIndex = currentPage * 5;
-    // const currentUsers = users.slice(startIndex, endIndex);
+
+
+    useEffect(() => {
+        const calculatedTotalPages = Math.ceil(filteredUsers.length / 5);
+        setTotalPages(calculatedTotalPages);
+      }, [filteredUsers]);
+      
+
     const changePage = (page) => {
         setCurrentPage(page);
     };
@@ -157,10 +179,6 @@ const Customers = () => {
 
 
 
-    const ob_status = {
-        1: 'ว่าง',
-        2: 'ไม่ว่าง',
-    };
 
     const openModal = () => {
         setShowModal(true);
@@ -366,18 +384,6 @@ const Customers = () => {
             console.error(error);
         }
     };
-    const filteredUsers = users.filter(user => {
-        const lowercaseSearchTerm = searchTerm.toLowerCase();
-        return (
-            user.room_typename.toLowerCase().includes(lowercaseSearchTerm) ||
-            user.room_name.toLowerCase().includes(lowercaseSearchTerm) ||
-            String(ob_status[user.room_status]).toLowerCase() === lowercaseSearchTerm
-        );
-    });
-    
-    const startIndex = (currentPage - 1) * 5;
-    const endIndex = currentPage * 5;
-    const currentUsers = filteredUsers.slice(startIndex, endIndex);
 
     return (
         <>
