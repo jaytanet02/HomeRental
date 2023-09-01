@@ -106,9 +106,9 @@ function Dashboard() {
 
   const urlserver = "https://lazy-ruby-rooster-gown.cyclic.app";
   useEffect(() => {
-    return () => {
-      fetchUsers();
-    };
+
+    fetchUsers();
+
   }, []);
 
 
@@ -336,9 +336,9 @@ function Dashboard() {
       } else {
         setSelectedPaymentMethod(response.data[0].pay_payment_type);
       }
-      if (response.data[0].pay_status===2) {
+      if (response.data[0].pay_status === 2) {
         setshowSaveButtonPay(false);//ปิดปุ่มชำระเงิน
-      }else{
+      } else {
         setshowSaveButtonPay(true);
       }
       if (response.data[0].pay_pic === "") {
@@ -1223,18 +1223,18 @@ function Dashboard() {
                       บันทึก
                     </Button>
                   )}
-                
-                   
-                    {showSaveButtonPay && (
-                      <Button variant="success" type="submit" onClick={(e) => handleSignup(e, "paymoney")}>
-                        ชำระเงิน
-                      </Button>
-                       )}
-                      <Button variant="danger" onClick={closeModal}>
-                        ปิด
-                      </Button>
-                  
-                 
+
+
+                  {showSaveButtonPay && (
+                    <Button variant="success" type="submit" onClick={(e) => handleSignup(e, "paymoney")}>
+                      ชำระเงิน
+                    </Button>
+                  )}
+                  <Button variant="danger" onClick={closeModal}>
+                    ปิด
+                  </Button>
+
+
                 </Modal.Footer>
               </Form>
             </Modal.Body>
