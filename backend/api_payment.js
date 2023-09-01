@@ -388,7 +388,8 @@ router.get('/', async (req, res) => {
             },
             {
                 $sort: {
-                    pay_status: 1 // 1 คือเรียงจากน้อยไปมาก
+                    pay_status: 1,
+                    pay_round: 1 // 1 คือเรียงจากน้อยไปมาก
                 }
             }
         ]).toArray();
@@ -409,7 +410,8 @@ router.get('/', async (req, res) => {
             },
             {
                 $sort: {
-                    pay_status: 1 // 1 คือเรียงจากน้อยไปมาก
+                    pay_status: 1 ,
+                    pay_round: 1 // 1 คือเรียงจากน้อยไปมาก
                 }
             }
         ]).toArray();
