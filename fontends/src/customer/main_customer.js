@@ -31,6 +31,7 @@ const Maincustomer = () => {
     const [cus_id, setcus_id] = useState();
     const [cus_name, setcus_name] = useState("");
     const [cus_id_card, setcus_id_card] = useState("");
+    const [cus_otp, setcus_otp] = useState("");
     const [cus_tel, setcus_tel] = useState("");
 
     const [cus_room_id, setcus_room_id] = useState("");
@@ -131,6 +132,7 @@ const Maincustomer = () => {
             setcus_name("");
             setcus_id_card("");
             setcus_tel("");
+            setcus_otp("");
             setcus_status(1);
             setcus_datein(formattedDate);
         } catch (error) {
@@ -154,6 +156,15 @@ const Maincustomer = () => {
     //     }
     // };
 
+    const send_otp = async (value) => {
+        try {
+            const response = await axios.get(urlserver + `/api_customer/send_otp?cus_tel=${value}`);
+            console.log(response.data);
+        } catch (error) {
+            console.log(error);
+        }
+
+    };
     const sum_total = async (type) => {
         var room_price = cus_room_price;
         var room_guarantee = cus_room_guarantee;
@@ -356,38 +367,64 @@ const Maincustomer = () => {
                 });
                 return false;
             }
-            const response = await axios.post(urlserver + `/api_customer/create`, {
-                cus_id,
-                cus_name,
-                cus_id_card,
-                cus_tel,
-                cus_room_id,
-                cus_status,
-                cus_datein,
-                cus_room_guarantee,
-                cus_room_advance,
-                cus_room_water,
-                cus_room_electricity,
-                cus_room_bin_price,
-                cus_room_price,
-                cus_room_sum,
-
-
-
-            });
-            // กระบวนการอื่นๆ เมื่อสำเร็จ
-
-
-            if (response.data !== "") {
+            if (cus_otp === "") {
                 Swal.fire({
                     title: '',
-                    text: 'บันทึกข้อมูลสำเร็จ',
-                    icon: 'success',
+                    text: 'กรุณากรอก OTP',
+                    icon: 'warning',
                 });
-                setShowModal(false);
+                return false;
             }
-            fetchUsers();
-            fettyperoom();
+            const response_otp = await axios.post(urlserver + `/api_customer/verify_otp`, {
+                cus_tel,
+                cus_otp
+            });
+            console.log(response_otp.data);
+            if (response_otp.data.error === false) {
+                const response = await axios.post(urlserver + `/api_customer/create`, {
+                    cus_id,
+                    cus_name,
+                    cus_id_card,
+                    cus_tel,
+                    cus_room_id,
+                    cus_status,
+                    cus_datein,
+                    cus_room_guarantee,
+                    cus_room_advance,
+                    cus_room_water,
+                    cus_room_electricity,
+                    cus_room_bin_price,
+                    cus_room_price,
+                    cus_room_sum,
+
+
+
+                });
+                if (response.data !== "") {
+                    Swal.fire({
+                        title: '',
+                        text: 'บันทึกข้อมูลสำเร็จ',
+                        icon: 'success',
+                    });
+                    setShowModal(false);
+                }
+                fetchUsers();
+                fettyperoom();
+            } else if (response_otp.data.error === true && (response_otp.data.code === "V0002" || response_otp.data.code === 'V0001')) {
+                Swal.fire({
+                    title: '',
+                    text: 'รหัส OTP ไม่ถูกต้อง กรุณาลองใหม่อีกครั้ง',
+                    icon: 'error',
+                });
+
+            } else if (response_otp.data.error === true && response_otp.data.code === "V0003") {
+                Swal.fire({
+                    title: '',
+                    text: 'รหัส OTP หมดอายุ กรุณาลองใหม่อีกครั้ง',
+                    icon: 'error',
+                });
+
+            }
         } catch (error) {
             console.error(error);
         }
@@ -589,20 +626,43 @@ const Maincustomer = () => {
                         </Form.Group>
                         <Form.Group >
                             <Form.Label ><span style={{ color: 'red' }}>*</span> เบอร์โทรศัพท์</Form.Label>
+                        </Form.Group>
+
+                        <Form.Group style={{ display: 'flex', alignItems: 'center' }}>
                             <Form.Control
+                                style={{ width: '70%' }} // ปรับความกว้างตามต้องการ
                                 type="text"
                                 value={cus_tel}
-
                                 onChange={(e) => {
                                     const inputValue = e.target.value.replace(/\D/g, ''); // เอาแต่ตัวเลข
                                     if (inputValue.length <= 10) {
                                         setcus_tel(inputValue);
+                                    }
+                                }}
+                            />
+
+                            <Button onClick={() => send_otp(cus_tel)}>ส่ง OTP</Button>
+                        </Form.Group>
+
+                        <Form.Group >
+                            <Form.Label ><span style={{ color: 'red' }}>*</span> OTP</Form.Label>
+                            <Form.Control
+                                type="text"
+                                value={cus_otp}
+                                onChange={(e) => {
+                                    const inputValue = e.target.value.replace(/\D/g, ''); // เอาแต่ตัวเลข
+                                    if (inputValue.length <= 6) {
+                                        setcus_otp(inputValue);
                                     }
 
 
                                 }}
                             />
                         </Form.Group>
+
+
+
+
 
                         <Form.Group >
                             <Form.Label>ประเภทห้อง/เลขห้อง</Form.Label>

@@ -366,13 +366,115 @@ router.get('/edit', async (req, res) => {
   res.status(200).send(users);
 });
 
+router.get('/send_otp', async (req, res) => {
+  let client; // ประกาศตัวแปร client ที่ระดับสูงสุด
+
+  try {
+    var tel = String(req.query.cus_tel);
+    client = new MongoClient(uri);
+    await client.connect();
+    const fetch = require('node-fetch');
+    const apiUrl = 'https://havesms.com/api/otp/send';
+    const options = {
+      method: 'POST',
+      headers: {
+        'Authorization': 'Bearer gjAWM2YtthTcglB87IQSTOLyJYOMRFbkeBYbU3GG',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        "msisdn": tel,
+        "sender": "OTP"
+      })
+    };
+
+    const response = await fetch(apiUrl, options);
+    const responseData = await response.json(); // ใช้ .json() แทน .text() เพื่อดึงข้อมูล JSON จาก API
+
+    // ตรวจสอบว่า API ส่งค่ากลับมาให้ถูกต้องและตรงกับโครงสร้างข้อมูลที่คุณต้องการ
+    if (responseData.error === false) {
+      await client.db('home_rental').collection('otp').insertOne({
+        otp_error: responseData.error,
+        otp_description: responseData.description,
+        otp_cus_tel: tel,
+        otp: responseData.otp,
+        otp_ref: responseData.ref,
+        otp_transaction_id: responseData.transaction_id,
+        otp_expired_at: responseData.expired_at
+      });
+      console.log(responseData);
+      res.status(200).send(responseData); // ส่งข้อมูลกลับไปที่ไคลเอนต์
+    } else {
+      console.error('API Error:', responseData.description);
+      res.status(500).send('Internal Server Error'); // หรือจัดการกับข้อผิดพลาดอื่นๆ ตามที่คุณต้องการ
+    }
+  } catch (error) {
+    console.error('Error:', error);
+    res.status(500).send('Internal Server Error'); // หรือจัดการกับข้อผิดพลาดอื่นๆ ตามที่คุณต้องการ
+  } finally {
+    if (client) {
+      await client.close();
+    }
+  }
+});
+router.post('/verify_otp', async (req, res) => {
+  var data_cliend = req.body;
+
+  let client; // ประกาศตัวแปร client ที่ระดับสูงสุด
+  try {
+
+
+    client = new MongoClient(uri);
+    await client.connect();
+    var data_tran = await client.db('home_rental').collection('otp').findOne({ otp_cus_tel: data_cliend.cus_tel, otp: data_cliend.cus_otp });
+
+    if (!data_tran) {
+      var transaciton_id = '0';
+    } else {
+      var transaciton_id = data_tran.otp_transaction_id;
+    }
+    const fetch = require('node-fetch');
+    const apiUrl = 'https://havesms.com/api/otp/verify';
+    const options = {
+      method: 'POST',
+      headers: {
+        'Authorization': 'Bearer gjAWM2YtthTcglB87IQSTOLyJYOMRFbkeBYbU3GG',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        "msisdn": data_cliend.cus_tel,
+        "otp": data_cliend.cus_otp,
+        "transaction_id": transaciton_id
+      })
+    };
+
+    const response = await fetch(apiUrl, options);
+    const responseData = await response.json(); // ใช้ .json() แทน .text() เพื่อดึงข้อมูล JSON จาก API
+
+    // ตรวจสอบว่า API ส่งค่ากลับมาให้ถูกต้องและตรงกับโครงสร้างข้อมูลที่คุณต้องการ
+    if (responseData.error !== '') {
+
+      console.log(responseData);
+      res.status(200).send(responseData); // ส่งข้อมูลกลับไปที่ไคลเอนต์
+    } else {
+      console.error('API Error:', responseData.description);
+      res.status(500).send('Internal Server Error'); // หรือจัดการกับข้อผิดพลาดอื่นๆ ตามที่คุณต้องการ
+    }
+  } catch (error) {
+    console.error('Error:', error);
+    res.status(500).send('Internal Server Error'); // หรือจัดการกับข้อผิดพลาดอื่นๆ ตามที่คุณต้องการ
+  } finally {
+    if (client) {
+      await client.close();
+    }
+  }
+});
+
+
+
+
 router.delete('/delete', async (req, res) => {
-
-
   const id = req.query.cus_id; // ควรเปลี่ยนจาก 'ids' เป็น 'id' เนื่องจากตาม URL ควรใช้ query parameter เป็น 'id'
   const id_cus = parseInt(id);
-
-
   const client = new MongoClient(uri);
   await client.connect();
   const users = await client.db('home_rental').collection('customer').findOne({ cus_id: id_cus });
@@ -391,7 +493,7 @@ router.delete('/delete', async (req, res) => {
     await client.db('home_rental').collection('room').updateOne(filter, update_status_room);
   }
   try {
-    
+
     const filter_cus_id = { cus_id: id_cus };
     const update_status_customer = {
       $set: {
