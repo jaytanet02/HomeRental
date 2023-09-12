@@ -23,7 +23,7 @@ router.post('/create', async (req, res) => {
     var currentDate = new Date();
     var formattedDate = currentDate.toISOString().split('T')[0];
     var date = new Date(formattedDate);
-    var now_year = (date.getFullYear() + 543);
+    var now_year = (date.getFullYear()+543);
     var now_month = (date.getMonth() + 1).toString().padStart(2, '0');
     var now_day = date.getDate();
 
@@ -48,7 +48,7 @@ router.post('/create', async (req, res) => {
         if (check_payment === null) {
 
             const check_round_pay_date = await client.db('home_rental').collection('payment').findOne({ pay_cus_id: value.cus_id }, { sort: { pay_id: -1 } });
-            console.log(check_round_pay_date);
+
 
             if (check_round_pay_date === null) {
                 var date_cus = new Date(value.cus_datein);
@@ -410,7 +410,7 @@ router.get('/', async (req, res) => {
             },
             {
                 $sort: {
-                    pay_status: 1,
+                    pay_status: 1 ,
                     pay_round: 1 // 1 คือเรียงจากน้อยไปมาก
                 }
             }
@@ -445,63 +445,20 @@ router.post('/notify', async (req, res) => {
         res.status(500).send("Failed to send Line Notify"); // ส่งข้อความแจ้งเตือนเมื่อเกิดข้อผิดพลาด
     }
 });
-// router.put('/pic_bin', async (req, res) => {
-
-//     if (!req.files || !req.files.file) {
-//         return res.status(400).send('No image file uploaded');
-//     }
-//     const id = req.query.pay_id;
-//     const imageFile = req.files.file;
-//     console.log(imageFile);
-//     const fileName = `qr_${id}.jpg`; // ชื่อไฟล์ที่ผสมระหว่าง "qr_", ตัวเลขรัน, และชื่อไฟล์เดิม
-//     const uploadPath = path.join(__dirname, 'images', fileName); // ตำแหน่งในเครื่องเซิร์ฟเวอร์
-//     const filter = { pay_id: parseInt(id) };
-//     console.log(filter);
-//     try {
-//         await imageFile.mv(uploadPath);
-
-//         var updateDocument = {
-//             $set: {
-//                 pay_pic: fileName,
-
-//             }
-//         };
-
-//         const client = new MongoClient(uri);
-//         await client.connect();
-//         await client.db('home_rental').collection('payment').updateOne(filter, updateDocument);
-//         await client.close();
-
-//         res.send('Image uploaded successfully');
-//     } catch (err) {
-//         console.error('Error saving image file:', err);
-//         res.status(500).send('Failed to save image file: ' + err);
-//     }
-
-// });
-
-
 router.put('/pic_bin', async (req, res) => {
-    const fs = require('fs').promises;
+
     if (!req.files || !req.files.file) {
         return res.status(400).send('No image file uploaded');
     }
     const id = req.query.pay_id;
     const imageFile = req.files.file;
-    console.log(imageFile);
     const fileName = `qr_${id}.jpg`; // ชื่อไฟล์ที่ผสมระหว่าง "qr_", ตัวเลขรัน, และชื่อไฟล์เดิม
     const uploadPath = path.join(__dirname, 'images', fileName); // ตำแหน่งในเครื่องเซิร์ฟเวอร์
     const filter = { pay_id: parseInt(id) };
-
-  
-    const imageBuffer = Buffer.from(imageFile.data, 'base64');
-
-
-    // บันทึกไฟล์ลงในเครื่องเซิร์ฟเวอร์
-
+    console.log(filter);
     try {
+        await imageFile.mv(uploadPath);
 
-        await fs.writeFile(uploadPath, imageBuffer);
         var updateDocument = {
             $set: {
                 pay_pic: fileName,
@@ -521,6 +478,7 @@ router.put('/pic_bin', async (req, res) => {
     }
 
 });
+
 
 
 router.get('/pic_bin/file', async (req, res) => {

@@ -598,6 +598,29 @@ function Dashboard() {
       console.error(error);
     }
   };
+  const report = async () => {
+    try {
+      const response = await axios.get(urlserver + `/api_report_dashboard/generate-pdf`, {
+        params: {
+          searchmonth,
+          searchyear,
+          searchstatus,
+          searchtext,
+        },
+        responseType: 'blob', // ระบุ responseType เป็น 'blob' เพื่อรับข้อมูลในรูปแบบ binary
+      });
+  
+      // สร้าง URL สำหรับไฟล์ PDF จาก binary data
+      const pdfBlob = new Blob([response.data], { type: 'application/pdf' });
+      const pdfUrl = URL.createObjectURL(pdfBlob);
+  
+      // เปิดไฟล์ PDF ในหน้าต่างใหม่
+      window.open(pdfUrl, '_blank');
+    } catch (error) {
+      console.error(error);
+    }
+  };
+  
   const handleSignup = async (e, typebutton) => {
     e.preventDefault();
 
@@ -842,7 +865,7 @@ function Dashboard() {
           </div><br />
 
           <div className="d-flex justify-content-center align-items-center container-fluid">
-            <div className="input-group" style={{ maxWidth: '770px' }}>
+            <div className="input-group" style={{ maxWidth: '620px' }}>
               <input
                 type="text"
                 className="form-control border-1 small text-right"
@@ -853,7 +876,11 @@ function Dashboard() {
                 onChange={(e) => setSearchtext(e.target.value)}
               />
             </div>
-          </div><br />
+            <button className='btn btn-success'  onClick={(e) => report()} style={{ marginLeft: '10px' }}>ออกรายงาน</button>
+          </div>
+
+
+          <br />
           {/* table */}
           <div className="container-fluid py-4">
 
