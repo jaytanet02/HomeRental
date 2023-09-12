@@ -6,6 +6,12 @@ const router = express.Router();
 const cors = require('cors');
 router.use(cors());
 router.use(express.json());
+router.use((req, res, next) => {
+  res.header('Access-Control-Allow-Origin', 'http://localhost:3000/#/main_dashboard');
+  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
+  next();
+});
+
 const { MongoClient } = require("mongodb");
 const uri = "mongodb+srv://admin:0982846992@cluster0.qvuui0g.mongodb.net/?retryWrites=true&w=majority";
 
