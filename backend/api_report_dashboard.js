@@ -10,7 +10,7 @@ const { GridFSBucket, MongoClient } = require("mongodb");
 const uri = "mongodb+srv://admin:0982846992@cluster0.qvuui0g.mongodb.net/?retryWrites=true&w=majority";
 
 router.use(cors({
-  origin: 'https://homerentalsystem.onrender.com'
+  origin: '*'
 }));
 
 async function listFiles() {
