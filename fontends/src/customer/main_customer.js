@@ -499,7 +499,7 @@ const Maincustomer = () => {
     const handleUpload = () => {
         const formData = new FormData();
         formData.append('excelFile', importexcel);
-        console.log(formData);
+
         fetch(urlserver + '/api_customer/upload', {
             method: 'POST',
             body: formData,
@@ -511,8 +511,10 @@ const Maincustomer = () => {
                         icon: 'success',
                         title: 'นำเข้าข้อมูลสำเร็จ',
                     });
-                    fetchUsers();
-                    fettyperoom();
+                
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 2000);
                 } else {
                     Swal.fire({
                         icon: 'error',
@@ -551,7 +553,7 @@ const Maincustomer = () => {
                             เพิ่มข้อมูล
                         </button>
 
-                        <div className="input-group" style={{ maxWidth: '300px' }}>
+                        <div className="input-group" style={{ maxWidth: '200px' }}>
                             <input
                                 type="text"
                                 className="form-control border-1 small text-right"
@@ -566,16 +568,15 @@ const Maincustomer = () => {
                     
                     <div className="d-flex justify-content-end align-items-center container-fluid">
                     <div>
-                            <button className="btn btn-warning" onClick={downloadSampleExcel} style={{ marginTop: '10px', marginLeft: '10px' }}>ดาวน์โหลดไฟล์ Excel ตัวอย่าง</button>
+                            <button className="btn btn-warning" onClick={downloadSampleExcel} style={{ marginTop: '15px', marginLeft: '10px' }}>ดาวน์โหลดไฟล์ Excel ตัวอย่าง</button>
                         </div>
                         <Form.Label ><span style={{ color: 'white', width: '300px',marginLeft: '20px' }}> นำเข้าไฟล์ excel</span></Form.Label>
                         <Form.Control
                             style={{ width: '300px', marginLeft: '10px' }}
                             type="file"
-
                             onChange={handleFileChange}
                         />
-                        <button className="btn btn-danger" type='button' onClick={() => handleUpload()} style={{ marginTop: '10px', marginLeft: '10px' }}>
+                        <button className="btn btn-danger" type='button' onClick={() => handleUpload()} style={{ marginTop: '15px', marginLeft: '10px' }}>
                             อัพโหลด
                         </button>
 
