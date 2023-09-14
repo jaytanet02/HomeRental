@@ -8,8 +8,50 @@ router.use(express.json()); // เปิดใช้งาน middleware ใน�
 const axios = require('axios');
 const { MongoClient } = require("mongodb");
 const uri = "mongodb+srv://admin:0982846992@cluster0.qvuui0g.mongodb.net/?retryWrites=true&w=majority";
-
+const multer = require('multer'); // เพื่อจัดการการอัปโหลดไฟล์
+const XLSX = require('xlsx'); // เพื่ออ่านไฟล์ Excel
+const { values } = require('pdf-lib');
 // POST /user/create
+const storage = multer.memoryStorage(); // เก็บไฟล์ในหน่วยความจำชั่วคราว
+const upload = multer({ storage });
+
+router.post('/upload', upload.single('excelFile'), async (req, res) => {
+  const fileBuffer = req.file.buffer;
+  const client = new MongoClient(uri);
+  await client.connect();
+  try {
+    const workbook = XLSX.read(fileBuffer, { type: 'buffer' });
+    const sheetName = workbook.SheetNames[0];
+    const sheetData = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName]);
+    for (value of sheetData) {
+
+      await client.db('home_rental').collection('customer').insertOne({
+        cus_id: parseInt(value.cus_id),
+        cus_name: value.cus_name,
+        cus_id_card: value.cus_id_card,
+        cus_tel: value.cus_tel,
+        cus_room_id: parseInt(value.cus_room_id),
+        cus_room_price: parseInt(value.cus_room_price),
+        cus_room_bin_price: parseInt(value.cus_room_bin_price),
+        cus_room_guarantee: parseInt(value.cus_room_guarantee),
+        cus_room_advance: parseInt(value.cus_room_advance),
+        cus_room_water: parseInt(value.cus_room_water),
+        cus_room_electricity:parseInt( value.cus_room_electricity),
+        cus_room_sum: parseInt(value.cus_room_sum),
+        cus_status: parseInt(value.cus_status),
+        cus_datein: value.cus_datein,
+        cus_round: value.cus_round,
+
+      });
+    }
+
+    await client.close();
+    res.json({ success: true, message: 'อัปโหลดไฟล์ Excel สำเร็จ' });
+  } catch (error) {
+    console.error('เกิดข้อผิดพลาดในการอ่านไฟล์ Excel:', error);
+    res.status(500).json({ success: false, message: 'เกิดข้อผิดพลาดในการอ่านไฟล์ Excel' });
+  }
+});
 
 router.post('/create', async (req, res) => {
 

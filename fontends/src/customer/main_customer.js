@@ -62,6 +62,7 @@ const Maincustomer = () => {
     const [edit_cus_room_bin_price, set_edit_cus_room_bin_price] = useState("");
     const [edit_cus_room_sum, set_edit_cus_room_sum] = useState("");
 
+    const [importexcel, set_importexcel] = useState(null);
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
     const ob_status = {
@@ -82,23 +83,23 @@ const Maincustomer = () => {
     const currentUsers = filteredUsers.slice(startIndex, endIndex);
 
 
-    // const urlserver = "http://localhost:4000";
-    // useEffect(() => {
-    //     return () => {
-    //         fetchUsers();
-    //         fettyperoom();
+    const urlserver = "http://localhost:4000";
+    useEffect(() => {
+        return () => {
+            fetchUsers();
+            fettyperoom();
 
-    //     };
-    // }, []);
+        };
+    }, []);
 
     // const urlserver = "https://homerentalbackend.onrender.com";
 
-    const urlserver = "https://lazy-ruby-rooster-gown.cyclic.app";
-    useEffect(() => {
-        fetchUsers();
-        fettyperoom();
+    // const urlserver = "https://lazy-ruby-rooster-gown.cyclic.app";
+    // useEffect(() => {
+    //     fetchUsers();
+    //     fettyperoom();
 
-    }, []);
+    // }, []);
 
 
     useEffect(() => {
@@ -490,7 +491,53 @@ const Maincustomer = () => {
             console.error(error);
         }
     };
+    const handleFileChange = (e) => {
+        const selectedFile = e.target.files[0];
+        set_importexcel(selectedFile);
+    };
 
+    const handleUpload = () => {
+        const formData = new FormData();
+        formData.append('excelFile', importexcel);
+        console.log(formData);
+        fetch(urlserver + '/api_customer/upload', {
+            method: 'POST',
+            body: formData,
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success === true) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'นำเข้าข้อมูลสำเร็จ',
+                    });
+                    fetchUsers();
+                    fettyperoom();
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'นำเข้าข้อมูลไม่สำเร็จ',
+                    });
+                }
+            })
+            .catch(error => {
+                console.error('เกิดข้อผิดพลาดในการอัปโหลดไฟล์:', error);
+            });
+    };
+
+    const downloadSampleExcel = () => {
+        // กำหนดชื่อไฟล์ Excel ตัวอย่าง
+        const fileName = 'sample.xlsx';
+
+        // กำหนด URL สำหรับไฟล์ Excel ตัวอย่างที่เก็บในโฟเดอร์ public
+        const sampleExcelUrl = process.env.PUBLIC_URL + '/' + fileName;
+        console.log(sampleExcelUrl);
+        // สร้างลิงก์สำหรับดาวน์โหลด
+        const link = document.createElement('a');
+        link.href = sampleExcelUrl;
+        link.download = fileName;
+        link.click();
+    };
     return (
         <>
             <Indexmain />
@@ -500,10 +547,11 @@ const Maincustomer = () => {
                     {/* table */}
                     <br />
                     <div className="d-flex justify-content-between align-items-center container-fluid">
-                        <button type="button" className="btn btn-success" onClick={openModal}>
+                        <button type="button" className="btn btn-success" onClick={openModal} style={{ marginTop: '10px', marginLeft: '10px' }}>
                             เพิ่มข้อมูล
                         </button>
-                        <div className="input-group" style={{ maxWidth: '200px' }}>
+
+                        <div className="input-group" style={{ maxWidth: '300px' }}>
                             <input
                                 type="text"
                                 className="form-control border-1 small text-right"
@@ -515,6 +563,25 @@ const Maincustomer = () => {
                             />
                         </div>
                     </div>
+                    
+                    <div className="d-flex justify-content-end align-items-center container-fluid">
+                    <div>
+                            <button className="btn btn-warning" onClick={downloadSampleExcel} style={{ marginTop: '10px', marginLeft: '10px' }}>ดาวน์โหลดไฟล์ Excel ตัวอย่าง</button>
+                        </div>
+                        <Form.Label ><span style={{ color: 'white', width: '300px',marginLeft: '20px' }}> นำเข้าไฟล์ excel</span></Form.Label>
+                        <Form.Control
+                            style={{ width: '300px', marginLeft: '10px' }}
+                            type="file"
+
+                            onChange={handleFileChange}
+                        />
+                        <button className="btn btn-danger" type='button' onClick={() => handleUpload()} style={{ marginTop: '10px', marginLeft: '10px' }}>
+                            อัพโหลด
+                        </button>
+
+
+                    </div>
+                    
                     <br />
                     <div className="container-fluid py2">
                         <div className="row">

@@ -25,9 +25,13 @@ router.post('/generate-excel', async (req, res) => {
 
     // กำหนดข้อมูลที่จะใส่ลงใน Excel
     const data = [
-      ['เด็กน้อย', 'เด็กน้อย', 'เด็กน้อย'],
-      ['เด็กน้อย', 'เด็กน้อย', 'เด็กน้อย'],
-
+      ['cus_id', 'cus_name', 'cus_id_card','cus_tel','cus_room_id','cus_room_price','cus_room_bin_price','cus_room_guarantee'
+      ,'cus_room_advance','cus_room_water','cus_room_electricity','cus_room_sum','cus_status','cus_datein','cus_round'],
+      ['9', 'ทดสอบเจ', '1565214523126','0814486061','7','1000','10','600'
+      ,'900','1000','500','1200','1','2023-09-07','10'],
+      ['10', 'ทดสอบ', '1565214523126','0814486061','7','1000','10','600'
+      ,'900','1000','500','1200','1','2023-09-07','10'],
+     
     ];
 
     // เพิ่มข้อมูลลงใน worksheet
