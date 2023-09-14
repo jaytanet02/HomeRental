@@ -609,18 +609,73 @@ function Dashboard() {
         },
         responseType: 'blob', // ระบุ responseType เป็น 'blob' เพื่อรับข้อมูลในรูปแบบ binary
       });
-  
+
       // สร้าง URL สำหรับไฟล์ PDF จาก binary data
       const pdfBlob = new Blob([response.data], { type: 'application/pdf' });
       const pdfUrl = URL.createObjectURL(pdfBlob);
-  
+
       // เปิดไฟล์ PDF ในหน้าต่างใหม่
       window.open(pdfUrl, '_blank');
     } catch (error) {
       console.error(error);
     }
   };
-  
+
+  const report_word = async () => {
+    try {
+      // เรียกใช้ API บนเซิร์ฟเวอร์เพื่อสร้างเอกสาร Word
+      const response = await axios.post(urlserver + '/api_report_dashboard/generate-word', {
+        name: 'jay',
+        email: 'jay@gmail.com',
+      }, {
+        responseType: 'blob', // ระบุ responseType เป็น 'blob' เพื่อรับข้อมูลในรูปแบบของ Blob
+      });
+
+      // สร้าง URL สำหรับ Blob
+      const blobUrl = URL.createObjectURL(response.data);
+
+      // สร้างลิงก์เพื่อดาวน์โหลดไฟล์
+      const downloadLink = document.createElement('a');
+      downloadLink.href = blobUrl;
+      downloadLink.download = 'output.docx'; // ระบุชื่อไฟล์ที่คุณต้องการให้มี
+      downloadLink.click();
+
+      // อย่าลืมจะต้องเคลียร์ URL หลังจากใช้งานเสร็จ
+      URL.revokeObjectURL(blobUrl);
+
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const report_excel = async () => {
+    try {
+      // เรียกใช้ API บนเซิร์ฟเวอร์เพื่อสร้างเอกสาร Word
+      const response = await axios.post(urlserver + '/api_report_dashboard/generate-excel', {
+        name: 'jay',
+        email: 'jay@gmail.com',
+      }, {
+        responseType: 'blob', // ระบุ responseType เป็น 'blob' เพื่อรับข้อมูลในรูปแบบของ Blob
+      });
+
+      // สร้าง URL สำหรับ Blob
+      const blobUrl = URL.createObjectURL(response.data);
+
+      // สร้างลิงก์เพื่อดาวน์โหลดไฟล์
+      const downloadLink = document.createElement('a');
+      downloadLink.href = blobUrl;
+      downloadLink.download = 'output.xls'; // ระบุชื่อไฟล์ที่คุณต้องการให้มี
+      downloadLink.click();
+
+      // อย่าลืมจะต้องเคลียร์ URL หลังจากใช้งานเสร็จ
+      URL.revokeObjectURL(blobUrl);
+
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+
   const handleSignup = async (e, typebutton) => {
     e.preventDefault();
 
@@ -865,7 +920,7 @@ function Dashboard() {
           </div><br />
 
           <div className="d-flex justify-content-center align-items-center container-fluid">
-            <div className="input-group" style={{ maxWidth: '620px' }}>
+            <div className="input-group" style={{ maxWidth: '770px' }}>
               <input
                 type="text"
                 className="form-control border-1 small text-right"
@@ -876,9 +931,16 @@ function Dashboard() {
                 onChange={(e) => setSearchtext(e.target.value)}
               />
             </div>
-            <button className='btn btn-success'  onClick={(e) => report()} style={{ marginLeft: '10px' }}>ออกรายงาน</button>
           </div>
+          <div className="d-flex justify-content-center align-items-center container-fluid">
 
+              <button className='btn btn-danger' onClick={(e) => report()} style={{ marginLeft: '10px', marginTop: '10px', width:'250px' }} > PDF</button>
+      
+              <button className='btn btn-info' onClick={(e) => report_word()} style={{ marginLeft: '10px', marginTop: '10px' ,width:'250px'}}>word</button>
+      
+              <button className='btn btn-success' onClick={(e) => report_excel()} style={{ marginLeft: '10px', marginTop: '10px', width:'250px'}}>excel</button>
+     
+          </div>
 
           <br />
           {/* table */}

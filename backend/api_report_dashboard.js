@@ -6,30 +6,76 @@ const router = express.Router();
 const cors = require('cors');
 router.use(cors());
 router.use(express.json());
-const { GridFSBucket, MongoClient } = require("mongodb");
+const { MongoClient } = require("mongodb");
 const uri = "mongodb+srv://admin:0982846992@cluster0.qvuui0g.mongodb.net/?retryWrites=true&w=majority";
-
+const officegen = require('officegen'); // เพิ่มการนำเข้า officegen
+const docx = officegen('docx');
+const ExcelJS = require('exceljs');
 router.use(cors({
   origin: '*'
 }));
+// ... (import statements)
 
-async function listFiles() {
-  const client = new MongoClient(uri);
+
+router.post('/generate-excel', async (req, res) => {
   try {
-    await client.connect();
+    // สร้างไฟล์ Excel ใหม่
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet('ข้อมูล');
 
-    const db = client.db('home_rental');
-    const bucket = new GridFSBucket(db);
+    // กำหนดข้อมูลที่จะใส่ลงใน Excel
+    const data = [
+      ['เด็กน้อย', 'เด็กน้อย', 'เด็กน้อย'],
+      ['เด็กน้อย', 'เด็กน้อย', 'เด็กน้อย'],
 
-    // ดึงรายการไฟล์ทั้งหมดใน GridFS
-    const files = await bucket.find().toArray();
+    ];
 
-    // แสดงรายชื่อไฟล์
-    console.log(files);
-  } finally {
-    client.close();
+    // เพิ่มข้อมูลลงใน worksheet
+    data.forEach((row) => {
+      worksheet.addRow(row);
+    });
+
+    // บันทึกไฟล์ Excel เป็นไฟล์
+    const outputPath = 'report_excel.xlsx';
+    await workbook.xlsx.writeFile(outputPath);
+
+    console.log('สร้างไฟล์ Excel เสร็จสิ้น');
+    res.download(outputPath); // ส่งไฟล์ Excel กลับให้ผู้ใช้งาน
+  } catch (error) {
+    console.error('เกิดข้อผิดพลาดในการสร้างไฟล์ Excel:', error);
+    res.status(500).json({ error: 'เกิดข้อผิดพลาดในการสร้างไฟล์ Excel' });
   }
-}
+});
+
+
+router.post('/generate-word', async (req, res) => {
+  // เพิ่มเนื้อหาเอกสาร
+  const pObj = docx.createP();
+  pObj.addText('เด็กน้อย', { bold: true });
+  pObj.addLineBreak(); // เพิ่มบรรทัดใหม่
+  pObj.addText('มุก');
+
+ 
+
+
+  const outputPath = 'report_word.docx';
+  const outputStream = fs.createWriteStream(outputPath);
+  docx.generate(outputStream);
+
+  outputStream.on('finish', () => {
+    console.log('สร้างเอกสารเสร็จสิ้น');
+    res.download(outputPath); // ส่งไฟล์เอกสารกลับให้ผู้ใช้งาน
+  });
+
+  outputStream.on('error', (err) => {
+    console.error('เกิดข้อผิดพลาดในการสร้างเอกสาร:', err);
+    res.status(500).json({ error: 'เกิดข้อผิดพลาดในการสร้างเอกสาร' });
+  });
+});
+
+
+
+
 router.get('/generate-pdf', async (req, res) => {
   const { searchmonth, searchyear, searchstatus, searchtext } = req.query;
   let filter = {}; // สร้างออบเจ็กต์ filter เป็นเปล่าไว้ก่อน
@@ -124,7 +170,7 @@ router.get('/generate-pdf', async (req, res) => {
     // doc.addImage(image, 'JPEG', 50, 80, 120, 120);
 
     // บันทึกเอกสาร PDF ชั่วคราว
- 
+
 
     const tempFileName = 'generated-pdf.pdf';
     doc.save(tempFileName);
@@ -144,6 +190,9 @@ router.get('/generate-pdf', async (req, res) => {
     res.status(500).send('Error generating PDF');
   }
 });
+
+
+
 
 function f_status(data) {
   if (data === -1) {
