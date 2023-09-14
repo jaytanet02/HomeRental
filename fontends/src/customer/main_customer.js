@@ -83,23 +83,23 @@ const Maincustomer = () => {
     const currentUsers = filteredUsers.slice(startIndex, endIndex);
 
 
-    const urlserver = "http://localhost:4000";
-    useEffect(() => {
-        return () => {
-            fetchUsers();
-            fettyperoom();
+    // const urlserver = "http://localhost:4000";
+    // useEffect(() => {
+    //     return () => {
+    //         fetchUsers();
+    //         fettyperoom();
 
-        };
-    }, []);
+    //     };
+    // }, []);
 
     // const urlserver = "https://homerentalbackend.onrender.com";
 
-    // const urlserver = "https://lazy-ruby-rooster-gown.cyclic.app";
-    // useEffect(() => {
-    //     fetchUsers();
-    //     fettyperoom();
+    const urlserver = "https://lazy-ruby-rooster-gown.cyclic.app";
+    useEffect(() => {
+        fetchUsers();
+        fettyperoom();
 
-    // }, []);
+    }, []);
 
 
     useEffect(() => {

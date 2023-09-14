@@ -96,7 +96,7 @@ function Dashboard() {
   const currentUsers = filteredUsers.slice(startIndex, endIndex);
 
 
-  const urlserver = "http://localhost:4000";
+  // const urlserver = "http://localhost:4000";
   // useEffect(() => {
   //   return () => {
   //     fetchUsers();
@@ -104,7 +104,7 @@ function Dashboard() {
   // }, []);
   // const urlserver = "https://homerentalbackend.onrender.com";
 
-  // const urlserver = "https://lazy-ruby-rooster-gown.cyclic.app";
+  const urlserver = "https://lazy-ruby-rooster-gown.cyclic.app";
   useEffect(() => {
 
     fetchUsers();
