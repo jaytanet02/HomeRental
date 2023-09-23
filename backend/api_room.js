@@ -9,6 +9,9 @@ router.use(express.json()); // เปิดใช้งาน middleware ใน�
 const { MongoClient } = require("mongodb");
 const uri = "mongodb+srv://admin:0982846992@cluster0.qvuui0g.mongodb.net/?retryWrites=true&w=majority";
 
+
+
+
 // POST /user/create
 router.post('/create', async (req, res) => {
   const client = new MongoClient(uri);
@@ -220,6 +223,7 @@ router.put('/update', async (req, res) => {
 });
 
 // GET /data
+
 router.get('/', async (req, res) => {
   const client = new MongoClient(uri);
   await client.connect();
