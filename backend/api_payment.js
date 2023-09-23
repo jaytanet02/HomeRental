@@ -428,7 +428,7 @@ const cron = require('node-cron');
 
 // ตั้งตารางเวลาให้โค้ดรันทุกวันที่ 13:00
 // cron.schedule('0 13 * * *', async function () {
-cron.schedule('28 0 * * *', async function () {
+cron.schedule('40 0 * * *', async function () {
     try {
 
         const LINE_NOTIFY_API_URL = 'https://notify-api.line.me/api/notify';
