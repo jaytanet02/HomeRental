@@ -426,28 +426,7 @@ router.get('/', async (req, res) => {
 
 const cron = require('node-cron');
 
-// ตั้งตารางเวลาให้โค้ดรันทุกวันที่ 13:00
-// cron.schedule('0 13 * * *', async function () {
-cron.schedule('40 0 * * *', async function () {
-    try {
 
-        const LINE_NOTIFY_API_URL = 'https://notify-api.line.me/api/notify';
-        const LINE_NOTIFY_ACCESS_TOKEN = 'f8Qh0NgsqcDLmbJvQS1qhN7nWoiBVBuHGBWm3DMoM5Q'; // ใส่ Access Token ที่คุณได้รับจาก Line Notify ที่นี่
-        const message = "ทดสอบจากฟังชั่นรันออโต้"; // ข้อความที่คุณต้องการส่ง
-        const response = await axios({
-            method: "POST",
-            url: LINE_NOTIFY_API_URL,
-            headers: {
-                "Content-Type": "application/x-www-form-urlencoded",
-                "Authorization": "Bearer " + LINE_NOTIFY_ACCESS_TOKEN,
-            },
-            data: "message=" + message,
-        });
-        console.log("notify response", response.data);
-    } catch (err) {
-        console.error(err);
-    }
-});
 
 router.post('/notify', async (req, res) => {
     const LINE_NOTIFY_API_URL = 'https://notify-api.line.me/api/notify';

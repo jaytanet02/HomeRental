@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { Button, Modal, Form } from 'react-bootstrap';
+import { Table, Button, Modal, Form } from 'react-bootstrap';
 import Navbar from "../Navbar";
 import Indexmain from '../indexmain';
 import axios from 'axios';
@@ -511,7 +511,7 @@ const Maincustomer = () => {
                         icon: 'success',
                         title: 'นำเข้าข้อมูลสำเร็จ',
                     });
-                
+
                     setTimeout(() => {
                         window.location.reload();
                     }, 2000);
@@ -565,12 +565,12 @@ const Maincustomer = () => {
                             />
                         </div>
                     </div>
-                    
+
                     <div className="d-flex justify-content-end align-items-center container-fluid">
-                    <div>
+                        <div>
                             <button className="btn btn-warning" onClick={downloadSampleExcel} style={{ marginTop: '15px', marginLeft: '10px' }}>ดาวน์โหลดไฟล์ Excel ตัวอย่าง</button>
                         </div>
-                        <Form.Label ><span style={{ color: 'white', width: '300px',marginLeft: '20px' }}> นำเข้าไฟล์ excel</span></Form.Label>
+                        <Form.Label ><span style={{ color: 'white', width: '300px', marginLeft: '20px' }}> นำเข้าไฟล์ excel</span></Form.Label>
                         <Form.Control
                             style={{ width: '300px', marginLeft: '10px' }}
                             type="file"
@@ -582,7 +582,7 @@ const Maincustomer = () => {
 
 
                     </div>
-                    
+
                     <br />
                     <div className="container-fluid py2">
                         <div className="row">
@@ -908,6 +908,45 @@ const Maincustomer = () => {
                 </Modal.Header>
                 <Modal.Body >
                     <Form onSubmit={updatmodal}>
+                        <Table>
+                            <tr>
+                                <th>test</th>
+                                <th>test</th>
+                            </tr>
+                            <tr>
+                                <td>data</td>
+                                <td>data</td>
+                            </tr>
+                            <tr>
+                                <td>data</td>
+                                <td>data</td>
+                            </tr>
+                            <tr>
+                                <td>data</td>
+                                <td>data</td>
+                            </tr>
+                            <tr>
+                                <td>data</td>
+                                <td>data</td>
+                            </tr>
+                        </Table>
+                        <Modal.Footer>
+                            <Button variant="success" type="submit" >
+                                ยืนยัน
+                            </Button>
+                            <Button variant="danger" onClick={closeModaledit}>
+                                ปิด
+                            </Button>
+                        </Modal.Footer>
+                    </Form>
+                </Modal.Body>
+            </Modal>
+            {/* <Modal show={showModaledit} onHide={closeModal}>
+                <Modal.Header closeButton>
+                    <Modal.Title>แก้ไขข้อมูล</Modal.Title>
+                </Modal.Header>
+                <Modal.Body >
+                    <Form onSubmit={updatmodal}>
                         <Form.Group hidden >
                             <Form.Label>cus_id</Form.Label>
                             <Form.Control
@@ -1129,7 +1168,7 @@ const Maincustomer = () => {
                         </Modal.Footer>
                     </Form>
                 </Modal.Body>
-            </Modal>
+            </Modal> */}
         </>
     )
 };
