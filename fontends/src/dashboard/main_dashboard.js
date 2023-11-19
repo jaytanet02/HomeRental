@@ -59,18 +59,15 @@ function Dashboard() {
   const [pay_room_electricity, set_pay_room_electricity] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-
   const [data, setData] = useState([]);
   // const [showModal, setShowModal] = useState(false);
   const [showModaledit, setShowModaledit] = useState(false);
   const [showqr, setShowshowqr] = useState(false);
-
-
   const filteredUsers = data.filter(user => {
-    const lowercaseSearchTerm = searchmonth.toLowerCase();
-    const lowerstatus = searchstatus.toLowerCase();
-    const lowerhtext = searchtext.toLowerCase();
-    const loweryear = searchyear.toLowerCase();
+  const lowercaseSearchTerm = searchmonth.toLowerCase();
+  const lowerstatus = searchstatus.toLowerCase();
+  const lowerhtext = searchtext.toLowerCase();
+  const loweryear = searchyear.toLowerCase();
 
     if (lowercaseSearchTerm === "00" && lowerstatus === "00" && loweryear === "0" && !lowerhtext) {
       return true; // ไม่มีการค้นหา
@@ -96,7 +93,7 @@ function Dashboard() {
   const currentUsers = filteredUsers.slice(startIndex, endIndex);
 
 
-  // const urlserver = "http://localhost:4000";
+  const urlserver = "http://localhost:4000";
   // useEffect(() => {
   //   return () => {
   //     fetchUsers();
@@ -104,13 +101,72 @@ function Dashboard() {
   // }, []);
   // const urlserver = "https://homerentalbackend.onrender.com";
 
-  const urlserver = "https://lazy-ruby-rooster-gown.cyclic.app";
+  // const urlserver = "https://lazy-ruby-rooster-gown.cyclic.app";
   useEffect(() => {
 
     fetchUsers();
 
-  }, []);
+  }, [data]);
 
+
+  const fetchUsers = async (month) => {
+    console.log("s");
+    try {
+      await axios.post(urlserver + `/api_payment/create`);
+      const response = await axios.get(urlserver + `/api_payment`);
+      const data = {}; // สร้างออบเจ็กต์เปล่าเพื่อเก็บข้อมูล
+      const arr = response.data;
+      for (const value of arr) {
+        if (!data[value.pay_cus_round]) {
+          data[value.pay_cus_round] = {}; // สร้างอ็อบเจกต์ย่อยสำหรับรอบลูกค้า (x)
+        }
+
+        if (!data[value.pay_cus_round][value.pay_status]) {
+          data[value.pay_cus_round][value.pay_status] = value.pay_price_total; // กำหนดค่าในอ็อบเจกต์ย่อย (y)
+        } else {
+          data[value.pay_cus_round][value.pay_status] += value.pay_price_total; // เพิ่มค่าในอ็อบเจกต์ย่อย (y)
+        }
+
+        // เพิ่มค่าในตำแหน่ง "00" สำหรับยอดรวมทั้งหมดที่มีสถานะเดียวกัน
+        if (!data["00"]) {
+          data["00"] = {};
+        }
+        if (!data["00"][value.pay_status]) {
+          data["00"][value.pay_status] = value.pay_price_total;
+        } else {
+          data["00"][value.pay_status] += value.pay_price_total;
+        }
+      }
+      var currentDate = new Date();
+      var formattedDate = currentDate.toISOString().split('T')[0];
+      var date = new Date(formattedDate);
+      var now_year = date.getFullYear() + 543;
+      var now_month = (date.getMonth() + 1).toString().padStart(2, '0');
+      // var now_day = date.getDate();
+
+
+      setSearchmonth(now_month);
+      setSearchyear(String(now_year));
+      setData(response.data);
+      if ((data[now_month][0]) === undefined) {
+        setnot_received_amount("0");
+      } else {
+        setnot_received_amount(data[now_month][0]);
+      }
+      if ((data[now_month][1]) === undefined) {
+        set_wait_received_amount("0");
+      } else {
+        set_wait_received_amount(data[now_month][1]);
+      }
+      if ((data[now_month][2]) === undefined) {
+        setreceived_amount("0");
+      } else {
+        setreceived_amount(data[now_month][2]);
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  };
 
   useEffect(() => {
     const calculatedTotalPages = Math.ceil(filteredUsers.length / 5);
@@ -243,64 +299,6 @@ function Dashboard() {
 
 
   }
-  const fetchUsers = async (month) => {
-
-    try {
-      await axios.post(urlserver + `/api_payment/create`);
-      const response = await axios.get(urlserver + `/api_payment`);
-      const data = {}; // สร้างออบเจ็กต์เปล่าเพื่อเก็บข้อมูล
-      const arr = response.data;
-      for (const value of arr) {
-        if (!data[value.pay_cus_round]) {
-          data[value.pay_cus_round] = {}; // สร้างอ็อบเจกต์ย่อยสำหรับรอบลูกค้า (x)
-        }
-
-        if (!data[value.pay_cus_round][value.pay_status]) {
-          data[value.pay_cus_round][value.pay_status] = value.pay_price_total; // กำหนดค่าในอ็อบเจกต์ย่อย (y)
-        } else {
-          data[value.pay_cus_round][value.pay_status] += value.pay_price_total; // เพิ่มค่าในอ็อบเจกต์ย่อย (y)
-        }
-
-        // เพิ่มค่าในตำแหน่ง "00" สำหรับยอดรวมทั้งหมดที่มีสถานะเดียวกัน
-        if (!data["00"]) {
-          data["00"] = {};
-        }
-        if (!data["00"][value.pay_status]) {
-          data["00"][value.pay_status] = value.pay_price_total;
-        } else {
-          data["00"][value.pay_status] += value.pay_price_total;
-        }
-      }
-      var currentDate = new Date();
-      var formattedDate = currentDate.toISOString().split('T')[0];
-      var date = new Date(formattedDate);
-      var now_year = date.getFullYear() + 543;
-      var now_month = (date.getMonth() + 1).toString().padStart(2, '0');
-      // var now_day = date.getDate();
-
-
-      setSearchmonth(now_month);
-      setSearchyear(String(now_year));
-      setData(response.data);
-      if ((data[now_month][0]) === undefined) {
-        setnot_received_amount("0");
-      } else {
-        setnot_received_amount(data[now_month][0]);
-      }
-      if ((data[now_month][1]) === undefined) {
-        set_wait_received_amount("0");
-      } else {
-        set_wait_received_amount(data[now_month][1]);
-      }
-      if ((data[now_month][2]) === undefined) {
-        setreceived_amount("0");
-      } else {
-        setreceived_amount(data[now_month][2]);
-      }
-    } catch (error) {
-      console.error(error);
-    }
-  };
 
 
   const fetchedit = async (id) => {
@@ -934,12 +932,12 @@ function Dashboard() {
           </div>
           <div className="d-flex justify-content-center align-items-center container-fluid">
 
-              <button className='btn btn-danger' onClick={(e) => report()} style={{ marginLeft: '10px', marginTop: '10px', width:'250px' }} > PDF</button>
-      
-              <button className='btn btn-info' onClick={(e) => report_word()} style={{ marginLeft: '10px', marginTop: '10px' ,width:'250px'}}>word</button>
-      
-              <button className='btn btn-success' onClick={(e) => report_excel()} style={{ marginLeft: '10px', marginTop: '10px', width:'250px'}}>excel</button>
-     
+            <button className='btn btn-danger' onClick={(e) => report()} style={{ marginLeft: '10px', marginTop: '10px', width: '250px' }} > PDF</button>
+
+            <button className='btn btn-info' onClick={(e) => report_word()} style={{ marginLeft: '10px', marginTop: '10px', width: '250px' }}>word</button>
+
+            <button className='btn btn-success' onClick={(e) => report_excel()} style={{ marginLeft: '10px', marginTop: '10px', width: '250px' }}>excel</button>
+
           </div>
 
           <br />
