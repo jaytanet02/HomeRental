@@ -19,9 +19,10 @@ app.use('/api_report_dashboard', apiUserRoutes_report);
 app.use('/api_UserWebhook', apiUserWebhook);
 
 
-
-
 let port = process.env.PORT;
+if (port == null || port == "") {
+  port = 4000;
+}
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
 });
